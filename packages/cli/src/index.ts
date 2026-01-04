@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { getPackageVersion } from '@base44/cli-core';
+import { getPackageVersion } from './utils/index.js';
 import { loginCommand } from './commands/auth/login.js';
 import { whoamiCommand } from './commands/auth/whoami.js';
 import { logoutCommand } from './commands/auth/logout.js';

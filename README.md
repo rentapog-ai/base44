@@ -39,21 +39,32 @@ yarn clean
 
 ## Project Structure
 
+This is a **monorepo** using Turborepo and Yarn workspaces:
+
 ```
 cli/
-├── src/
-│   ├── commands/        # Command implementations
-│   │   └── auth/       # Authentication commands
-│   ├── lib/            # Shared libraries
-│   │   ├── api/        # API client code
-│   │   ├── config/     # Configuration management
-│   │   ├── schemas/    # Zod schemas
-│   │   └── utils/      # Utility functions
-│   ├── index.ts        # Main CLI entry point
-│   └── types/          # TypeScript type definitions
-├── dist/               # Build output (compiled JavaScript)
-├── package.json
-├── tsconfig.json
+├── packages/
+│   ├── cli/                    # Main CLI package (base44)
+│   │   ├── src/
+│   │   │   ├── commands/       # Command implementations
+│   │   │   │   └── auth/       # Authentication commands
+│   │   │   └── index.ts        # Main CLI entry point
+│   │   ├── dist/               # Build output (compiled JavaScript)
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── core/                    # Core shared package (@base44/cli-core)
+│       ├── src/
+│       │   ├── api/            # API client code
+│       │   ├── config/         # Configuration management
+│       │   ├── schemas/        # Zod schemas
+│       │   ├── utils/          # Utility functions
+│       │   └── index.ts        # Core package exports
+│       ├── dist/               # Build output
+│       ├── package.json
+│       └── tsconfig.json
+├── package.json                 # Root package.json (monorepo config)
+├── turbo.json                   # Turborepo configuration
+├── tsconfig.json                # Base TypeScript configuration
 └── README.md
 ```
 
