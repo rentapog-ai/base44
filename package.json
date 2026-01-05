@@ -2,7 +2,7 @@
   "name": "@base44/cli",
   "private": true,
   "description": "Base44 CLI Monorepo - Unified interface for managing Base44 applications",
-  "packageManager": "npm@10.2.4",
+  "packageManager": "npm@11.7.0",
   "workspaces": [
     "packages/*"
   ],
