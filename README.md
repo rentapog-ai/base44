@@ -5,15 +5,15 @@ A unified command-line interface for managing Base44 applications, entities, fun
 ## Installation
 
 ```bash
-# Using Yarn
-yarn install
+# Using npm
+npm install
 
 # Build the project
-yarn build
+npm run build
 
 # Run the CLI (multiple ways)
-yarn start                    # Using node directly
-yarn base44                   # Using yarn (runs node_modules/.bin/base44)
+npm start                     # Using node directly
+npm run base44                # Using npm (runs node_modules/.bin/base44)
 ./dist/index.js              # Run executable directly
 ```
 
@@ -21,13 +21,13 @@ yarn base44                   # Using yarn (runs node_modules/.bin/base44)
 
 ```bash
 # Run in development mode with watch
-yarn dev
+npm run dev
 
 # Build the project
-yarn build
+npm run build
 
 # Clean build artifacts
-yarn clean
+npm run clean
 ```
 
 ## Commands
@@ -39,7 +39,7 @@ yarn clean
 
 ## Project Structure
 
-This is a **monorepo** using Turborepo and Yarn workspaces:
+This is a **monorepo** using Turborepo and npm workspaces:
 
 ```
 cli/

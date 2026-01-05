@@ -6,7 +6,7 @@ This document provides essential context and guidelines for AI agents working on
 
 The Base44 CLI is a **monorepo** containing a TypeScript-based command-line tool built with:
 - **Turborepo** - Monorepo build system
-- **Yarn Workspaces** - Package dependency management
+- **npm Workspaces** - Package dependency management
 - **Commander.js** - CLI framework for command parsing
 - **@clack/prompts** - Interactive user prompts and UI components
 - **Zod** - Schema validation for API responses, config files, and user inputs
@@ -124,15 +124,15 @@ export type User = z.infer<typeof UserSchema>;
 ## Development Workflow
 
 ### Package Manager
-- **Use Yarn** for all package management operations
-- Install dependencies: `yarn install`
-- Add dependencies: `yarn add <package>`
-- Add dev dependencies: `yarn add -D <package>`
+- **Use npm** for all package management operations
+- Install dependencies: `npm install`
+- Add dependencies: `npm install <package>`
+- Add dev dependencies: `npm install -D <package>`
 
 ### Build Process
-- **Root level**: Use `yarn build` to build all packages with Turborepo
-- **Package level**: Navigate to package directory and use `yarn build` for individual packages
-- **Development**: Use `yarn dev` from root for development with watch mode
+- **Root level**: Use `npm run build` to build all packages with Turborepo
+- **Package level**: Navigate to package directory and use `npm run build` for individual packages
+- **Development**: Use `npm run dev` from root for development with watch mode
 - Always build before testing
 - Turborepo handles dependency order (core builds before cli)
 - **ES Modules**: All packages use `"type": "module"` - use `.js` extensions in imports
@@ -144,9 +144,9 @@ export type User = z.infer<typeof UserSchema>;
 
 ## Important Rules
 
-1. **Use Yarn** for all package management - never npm
+1. **Use npm** for all package management - never yarn
 2. **Monorepo structure** - Core package contains shared code, CLI package contains commands
-3. **Package dependencies** - CLI package depends on `@base44/cli-core` via workspace protocol
+3. **Package dependencies** - CLI package depends on `@base44/cli-core` via npm workspace protocol (`*`)
 4. **Zod validation is required** for all external data
 5. **@clack/prompts for all user interaction** - no raw `readline` or `inquirer`
 6. **TypeScript strict mode** - maintain type safety
