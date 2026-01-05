@@ -11,7 +11,7 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
   - `@base44/cli-core` - Shared utilities, API clients, schemas, and configuration management (internal package)
   - `base44` - Main CLI package (exported to npm, depends on `@base44/cli-core`)
 - **Build System**: Turborepo for fast, cached builds across packages
-- **Package Manager**: Yarn workspaces for monorepo dependency management
+- **Package Manager**: npm workspaces for monorepo dependency management
 
 ### CLI Framework
 - **Technology**: TypeScript with Commander.js for CLI framework
@@ -21,7 +21,7 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 - **Package Distribution**: Support for multiple package managers
   - Homebrew (brew) - macOS/Linux
   - Scoop - Windows
-  - npm/yarn - Node.js ecosystem (package published to npm as `base44`)
+  - npm - Node.js ecosystem (package published to npm as `base44`)
 
 ## Feature Implementation Plan
 
@@ -214,10 +214,10 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
    - **Production**: Use `tsc` for production builds
 
 3. **Package.json Setup**
-   - **Root package.json** (`base44-cli`):
-     - Configure Yarn workspaces for monorepo
-     - Install Turborepo as dev dependency
-     - Set up root-level scripts for building all packages
+  - **Root package.json** (`base44-cli`):
+    - Configure npm workspaces for monorepo
+    - Install Turborepo as dev dependency
+    - Set up root-level scripts for building all packages
    - **Core package** (`@base44/cli-core`):
      - Install shared dependencies:
        - `zod` - Schema validation
@@ -227,7 +227,7 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
        - `commander` - CLI framework
        - `@clack/prompts` - User prompts and UI components
        - `chalk` - Terminal colors (Base44 brand color: #E86B3C)
-       - `@base44/cli-core` - Workspace dependency on core package
+       - `@base44/cli-core` - npm workspace dependency on core package (using `*` protocol)
      - Set up bin entry point for CLI executable (`./dist/index.js`)
      - Set up build and dev scripts
      - **Shebang**: Main entry point (`src/index.ts`) includes `#!/usr/bin/env node`
@@ -276,7 +276,7 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
    - ✅ Zod validation for auth data
    - ✅ Cross-platform file system utilities
    - ✅ Error handling with user-friendly messages
-5. Package manager distribution setup (yarn/npm, brew, scoop)
+5. Package manager distribution setup (npm, brew, scoop)
 
 ### Phase 2: Core Features
 1. Entities management (`base44 entities`, `pull`, `push`)
@@ -322,7 +322,7 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 ### Build & Distribution
 - **Monorepo Structure** - Separated into `core` and `cli` packages
 - **Turborepo** - Fast build tool for TypeScript compilation across packages
-- **Yarn Workspaces** - Package manager for monorepo dependency management
+- **npm Workspaces** - Package manager for monorepo dependency management
 - **TypeScript Project References** - Proper dependency graph between packages
 - **ES Modules** - All packages use `"type": "module"` for native ES module support
 - **Build Tools**:
