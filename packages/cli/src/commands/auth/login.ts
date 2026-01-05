@@ -1,8 +1,27 @@
-import { Command } from 'commander';
+import { Command } from "commander";
+import { tasks } from "@clack/prompts";
+import { writeAuth } from "@base44/cli-core";
+import { runCommand } from "../../utils/index.js";
 
-export const loginCommand = new Command('login')
-  .description('Authenticate with Base44')
+async function login(): Promise<void> {
+  await tasks([
+    {
+      title: "Logging you in",
+      task: async () => {
+        await writeAuth({
+          token: "stub-token-12345",
+          email: "valid@email.com",
+          name: "KfirStri",
+        });
+
+        return "Logged in as KfirStri";
+      },
+    },
+  ]);
+}
+
+export const loginCommand = new Command("login")
+  .description("Authenticate with Base44")
   .action(async () => {
-    console.log('Login action - not yet implemented');
+    await runCommand(login);
   });
-

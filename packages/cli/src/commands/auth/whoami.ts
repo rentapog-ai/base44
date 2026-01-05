@@ -1,8 +1,24 @@
-import { Command } from 'commander';
+import { Command } from "commander";
+import { log } from "@clack/prompts";
+import { readAuth } from "@base44/cli-core";
+import { runCommand } from "../../utils/index.js";
 
-export const whoamiCommand = new Command('whoami')
-  .description('Display current authenticated user')
+async function whoami(): Promise<void> {
+  try {
+    const auth = await readAuth();
+    log.info(`Logged in as: ${auth.name} (${auth.email})`);
+  } catch (error) {
+    if (error instanceof Error) {
+      log.error(error.message);
+    } else {
+      log.error("Failed to read authentication data");
+    }
+  }
+}
+
+export const whoamiCommand = new Command("whoami")
+  .description("Display current authenticated user")
   .action(async () => {
-    console.log('Whoami action - not yet implemented');
+    await runCommand(whoami);
   });
 

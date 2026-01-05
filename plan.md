@@ -187,7 +187,11 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
      │       │   │       ├── login.ts
      │       │   │       ├── whoami.ts
      │       │   │       └── logout.ts
-     │       │   └── index.ts        # Main CLI entry point
+     │       │   ├── utils/          # CLI-specific utilities
+     │       │   │   ├── index.ts
+     │       │   │   ├── packageVersion.ts
+     │       │   │   └── runCommand.ts
+     │       │   └── index.ts        # Main CLI entry point (with shebang)
      │       ├── dist/               # Build output
      │       ├── package.json
      │       └── tsconfig.json
@@ -205,6 +209,9 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
    - Configure workspace dependencies (cli depends on core)
    - Set up source maps for debugging
    - Configure output directory structure for each package
+   - **ES Modules**: All packages use `"type": "module"` for ES module support
+   - **Development**: Use `tsx` for development/watch mode (not just `tsc`)
+   - **Production**: Use `tsc` for production builds
 
 3. **Package.json Setup**
    - **Root package.json** (`base44-cli`):
@@ -213,49 +220,62 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
      - Set up root-level scripts for building all packages
    - **Core package** (`@base44/cli-core`):
      - Install shared dependencies:
-       - `@clack/prompts` - User prompts
        - `zod` - Schema validation
-     - Set up build scripts
+     - Set up build scripts (`tsc` for build, `tsx watch` for dev)
    - **CLI package** (`base44`):
      - Install CLI-specific dependencies:
        - `commander` - CLI framework
+       - `@clack/prompts` - User prompts and UI components
+       - `chalk` - Terminal colors (Base44 brand color: #E86B3C)
        - `@base44/cli-core` - Workspace dependency on core package
-     - Set up bin entry point for CLI executable
+     - Set up bin entry point for CLI executable (`./dist/index.js`)
      - Set up build and dev scripts
+     - **Shebang**: Main entry point (`src/index.ts`) includes `#!/usr/bin/env node`
 
-4. **Authentication Commands (Placeholders Only)**
+4. **Authentication Commands (Implemented)**
    - Create `base44 login` command
      - Use Commander.js to register command
-     - Console.log placeholder: "Login action - not yet implemented"
+     - Use `@clack/prompts` tasks for async operations
+     - Store auth data using `writeAuth` from `@base44/cli-core`
+     - Wrap with `runCommand` utility for consistent branding
    - Create `base44 whoami` command
      - Use Commander.js to register command
-     - Console.log placeholder: "Whoami action - not yet implemented"
+     - Read auth data using `readAuth` from `@base44/cli-core`
+     - Display user information using `@clack/prompts` log
+     - Wrap with `runCommand` utility for consistent branding
    - Create `base44 logout` command
      - Use Commander.js to register command
-     - Console.log placeholder: "Logout action - not yet implemented"
+     - Delete auth data using `deleteAuth` from `@base44/cli-core`
+     - Wrap with `runCommand` utility for consistent branding
    - Ensure all commands are properly registered in main CLI entry point
    - Test that commands are accessible and show help text
 
 5. **Import Structure**
-   - Set up proper ES module imports/exports
+   - Set up proper ES module imports/exports (`.js` extensions in imports)
    - Create barrel exports for command modules if needed
    - Ensure TypeScript path resolution works correctly
+   - Use ES module syntax throughout (`import`/`export`)
 
 **Deliverables**:
 - ✅ Complete folder structure
-- ✅ Working build process
+- ✅ Working build process (tsc for production, tsx for development)
 - ✅ Package.json with all scripts
-- ✅ Three auth commands (login, whoami, logout) that execute and log placeholder messages
+- ✅ Three auth commands (login, whoami, logout) fully implemented
 - ✅ CLI can be run and commands respond with help text
+- ✅ Base44 branding via `runCommand` utility wrapper
 
 ### Phase 1: Foundation
-1. Implement Commander.js command framework
-2. Integrate `@clack/prompts` for user interactions
-3. Set up Zod schema validation infrastructure
-   - Create base schemas for API responses
-   - Create config file schemas
-   - Set up validation utilities
-4. Create authentication system (`base44 login`, `base44 whoami`, `base44 logout`)
+1. ✅ Implement Commander.js command framework
+2. ✅ Integrate `@clack/prompts` for user interactions
+3. ✅ Set up Zod schema validation infrastructure
+   - ✅ Create base schemas for auth data (`AuthDataSchema`)
+   - ✅ Create config file schemas
+   - ✅ Set up validation utilities
+4. ✅ Create authentication system (`base44 login`, `base44 whoami`, `base44 logout`)
+   - ✅ Auth data stored in `~/.base44/auth/auth.json`
+   - ✅ Zod validation for auth data
+   - ✅ Cross-platform file system utilities
+   - ✅ Error handling with user-friendly messages
 5. Package manager distribution setup (yarn/npm, brew, scoop)
 
 ### Phase 2: Core Features
@@ -283,11 +303,13 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 ## Technical Considerations
 
 ### Configuration
-- Local config file (`.base44/config.json` or similar)
+- **Global Auth Config**: Stored in `~/.base44/auth/auth.json` (managed by `@base44/cli-core`)
+- Local config file (`.base44/config.json` or similar) - for project-specific settings
 - Global config for user preferences
 - Environment-specific settings
 - **Zod schema validation for all configuration files** - Validate config structure and values
 - Type-safe config access using Zod-inferred types
+- **File System Utilities**: Cross-platform file operations in `packages/core/src/utils/fs.ts`
 
 ### API Integration
 - REST API client for Base44 services (using `fetch` or `axios`)
@@ -302,6 +324,11 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 - **Turborepo** - Fast build tool for TypeScript compilation across packages
 - **Yarn Workspaces** - Package manager for monorepo dependency management
 - **TypeScript Project References** - Proper dependency graph between packages
+- **ES Modules** - All packages use `"type": "module"` for native ES module support
+- **Build Tools**:
+  - Production: `tsc` (TypeScript compiler) for type-checked builds
+  - Development: `tsx` for fast watch mode and direct TypeScript execution
+- **CLI Entry Point**: `packages/cli/src/index.ts` includes shebang (`#!/usr/bin/env node`)
 - GitHub Actions for automated builds and npm releases (only `base44` package is published)
 
 ### Security
@@ -312,11 +339,13 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 - Schema validation for secrets and sensitive data
 
 ### User Experience
-- Clear error messages
-- Progress indicators for long operations using `@clack/prompts`
+- **Base44 Branding**: All commands wrapped with `runCommand` utility showing Base44 intro banner (color: #E86B3C)
+- Clear error messages with try-catch error handling
+- Progress indicators for long operations using `@clack/prompts` tasks
 - Interactive prompts using `@clack/prompts` for better UX
 - Comprehensive help system via Commander.js
 - Spinners and loading states for async operations
+- **Command Wrapper Pattern**: All commands use `runCommand()` utility for consistent branding and error handling
 
 ## Schema Validation with Zod
 
@@ -359,7 +388,9 @@ Generate a comprehensive CLI tool that provides a unified interface for managing
 ### Core CLI
 - **commander** - CLI framework for command parsing and help generation
 - **@clack/prompts** - Beautiful, accessible prompts and UI components
+- **chalk** - Terminal colors (Base44 brand color: #E86B3C)
 - **typescript** - TypeScript compiler and type system
+- **tsx** - TypeScript execution for development/watch mode
 
 ### API & HTTP
 - **axios** or **node-fetch** - HTTP client for API communication

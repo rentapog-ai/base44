@@ -45,47 +45,68 @@ The Base44 CLI is a **monorepo** containing a TypeScript-based command-line tool
 
 ### Code Style & Structure
 
+#### Code Comments
+- **Minimal commenting approach**: Only add comments for:
+  - Complex algorithms or non-obvious logic
+  - Unclear design decisions that need explanation
+  - Workarounds or non-standard patterns
+- **Avoid commenting**:
+  - Self-explanatory code
+  - Simple function signatures (TypeScript types provide documentation)
+  - Obvious operations (e.g., "// Read the file" when the function is `readFile`)
+- **JSDoc comments**: Only use for public APIs that need documentation for external consumers
+- Let the code speak for itself - prefer clear naming over comments
+
 #### Monorepo Folder Structure
 ```
 cli/
 ├── packages/
-│   ├── core/                    # @base44/cli-core package
+│   ├── core/                    # @base44/cli-core package (shared code)
 │   │   ├── src/
 │   │   │   ├── api/            # API client code
 │   │   │   ├── config/         # Configuration management
 │   │   │   ├── schemas/        # Zod schemas
 │   │   │   ├── utils/          # Utility functions
-│   │   │   ├── types/          # TypeScript type definitions
 │   │   │   └── index.ts        # Core package exports
-│   │   ├── dist/               # Build output
-│   │   ├── package.json
-│   │   └── tsconfig.json
+│   │   └── dist/               # Build output
 │   └── cli/                     # base44 package (main CLI)
 │       ├── src/
-│       │   ├── commands/       # Command implementations
-│       │   │   └── [feature]/  # Grouped by feature (auth, entities, etc.)
+│       │   ├── commands/        # Command implementations (grouped by feature)
+│       │   ├── utils/          # CLI-specific utilities
 │       │   └── index.ts        # Main CLI entry point
-│       ├── dist/               # Build output
-│       ├── package.json
-│       └── tsconfig.json
-├── package.json                 # Root package.json (base44-cli)
+│       └── dist/               # Build output
+├── package.json                 # Root package.json
 ├── turbo.json                   # Turborepo configuration
-├── tsconfig.json                # Base TypeScript configuration
-└── README.md
+└── tsconfig.json                # Base TypeScript configuration
 ```
 
 #### Command Implementation Pattern
 ```typescript
 import { Command } from 'commander';
-import { prompt } from '@clack/prompts';
-import { z } from 'zod';
+import { tasks, log } from '@clack/prompts';
+import { runCommand } from '../../utils/index.js';
+import { /* shared utilities */ } from '@base44/cli-core';
 
-export const loginCommand = new Command('login')
-  .description('Authenticate with Base44')
+async function commandFunction(): Promise<void> {
+  await tasks([
+    {
+      title: "Operation description",
+      task: async () => {
+        // Command logic here
+        return "Success message";
+      },
+    },
+  ]);
+}
+
+export const commandName = new Command('command-name')
+  .description('Command description')
   .action(async () => {
-    // Implementation using @clack/prompts and Zod validation
+    await runCommand(commandFunction);
   });
 ```
+
+**Important**: All commands must use `runCommand()` wrapper for consistent Base44 branding.
 
 #### Schema Definition Pattern
 ```typescript
@@ -110,16 +131,15 @@ export type User = z.infer<typeof UserSchema>;
 
 ### Build Process
 - **Root level**: Use `yarn build` to build all packages with Turborepo
-- **Package level**: Navigate to `packages/cli` and use `yarn build` for CLI only
-- Use `yarn dev` from root for development with watch mode (all packages)
-- Use `yarn start` from `packages/cli` to run the compiled CLI
+- **Package level**: Navigate to package directory and use `yarn build` for individual packages
+- **Development**: Use `yarn dev` from root for development with watch mode
 - Always build before testing
 - Turborepo handles dependency order (core builds before cli)
+- **ES Modules**: All packages use `"type": "module"` - use `.js` extensions in imports
+- **CLI Entry Point**: Main entry point includes shebang for direct execution
 
 ### Command Testing
-- Test commands by running: `node packages/cli/dist/index.js <command>`
-- Or use `yarn dev` from root for direct TypeScript execution
-- Or navigate to `packages/cli` and use `yarn dev` for CLI-specific development
+- Test commands by running the compiled CLI or using development mode
 - Verify help text: `base44 <command> --help`
 
 ## Important Rules
@@ -134,30 +154,35 @@ export type User = z.infer<typeof UserSchema>;
 8. **Turborepo for builds** - use Turborepo, not esbuild or tsup
 9. **TypeScript project references** - Use composite mode and project references
 10. **Test commands** after implementation to ensure they're registered
+11. **Cross-platform support** - The CLI must work on both Windows and Unix-like systems. Always use `path.join()`, `path.dirname()`, and other `path` module utilities for path operations. Never use string concatenation or hardcoded path separators.
+12. **Command wrapper** - All commands must use `runCommand()` utility for consistent Base44 branding
+13. **ES Modules** - All packages use `"type": "module"` - always use `.js` extensions in import statements
+14. **Shared utilities** - Use cross-platform file utilities and config management from `@base44/cli-core`
 
 ## Common Patterns
 
 ### Adding a New Command
-1. Create command file in `packages/cli/src/commands/[feature]/[command].ts`
-2. Import and register in main `packages/cli/src/index.ts`
+1. Create command file in commands directory (grouped by feature)
+2. Import and register in main CLI entry point
 3. Use Commander.js Command class
-4. Add Zod validation for inputs (schemas should be in `packages/core/src/schemas/`)
+4. Add Zod validation for inputs (schemas in core package)
 5. Use @clack/prompts for user interaction
 6. Import shared utilities from `@base44/cli-core` package
+7. Wrap command function with `runCommand()` utility
 
 ### API Integration
-1. Define Zod schema in `packages/core/src/schemas/`
-2. Create API client function in `packages/core/src/api/`
-3. Export from `packages/core/src/index.ts`
+1. Define Zod schema in core package schemas directory
+2. Create API client function in core package api directory
+3. Export from core package index
 4. Import and use in CLI commands from `@base44/cli-core`
 5. Validate response with Zod schema
 6. Handle errors gracefully
 7. Use @clack/prompts for loading states
 
 ### Configuration Management
-1. Define Zod schema in `packages/core/src/schemas/`
-2. Create config management functions in `packages/core/src/config/`
-3. Export from `packages/core/src/index.ts`
+1. Define Zod schema in core package schemas directory
+2. Create config management functions in core package config directory
+3. Export from core package index
 4. Import and use in CLI commands from `@base44/cli-core`
 5. Read config file
 6. Validate with Zod schema
@@ -167,9 +192,11 @@ export type User = z.infer<typeof UserSchema>;
 
 ### Core (Required)
 - `commander` - CLI framework
-- `@clack/prompts` - User prompts
+- `@clack/prompts` - User prompts and UI components
+- `chalk` - Terminal colors
 - `zod` - Schema validation
 - `typescript` - Language
+- `tsx` - TypeScript execution for development/watch mode
 
 ### API
 - `axios` or `node-fetch` - HTTP client
@@ -188,11 +215,8 @@ export type User = z.infer<typeof UserSchema>;
 
 - **Main plan**: `cli/plan.md` - Full implementation plan
 - **This file**: `cli/AGENTS.md` - AI agent guidelines
-- **Root config**: `cli/turbo.json` - Turborepo configuration
-- **Core package source**: `cli/packages/core/src/` - Shared utilities, API, schemas, config
-- **CLI package source**: `cli/packages/cli/src/` - CLI commands and entry point
-- **Core build output**: `cli/packages/core/dist/` - Compiled core package
-- **CLI build output**: `cli/packages/cli/dist/` - Compiled CLI package
+- **Core package**: `cli/packages/core/src/` - Shared utilities, API, schemas, config
+- **CLI package**: `cli/packages/cli/src/` - CLI commands and entry point
 
 ## Questions to Ask
 
@@ -207,13 +231,17 @@ If uncertain about implementation:
 
 - **Monorepo structure**: Core package is internal, CLI package is exported
 - CLI uses TypeScript with strict type checking and project references
-- All commands must be registered in `packages/cli/src/index.ts`
+- All commands must be registered in main CLI entry point
 - Build process compiles TypeScript to JavaScript in each package's `dist/` folder
 - Turborepo handles build order (core builds before cli)
 - Commands should be testable independently
-- Shared code (API, schemas, config, utils) goes in `packages/core`
-- CLI-specific code (commands) goes in `packages/cli`
+- Shared code (API, schemas, config, utils) goes in core package
+- CLI-specific code (commands) goes in CLI package
 - Import from `@base44/cli-core` in CLI commands for shared functionality
 - Error handling should be user-friendly with clear messages
 - Use @clack/prompts for all user-facing interactions (no console.log for prompts)
+- All commands use `runCommand()` utility for consistent branding
+- All packages use ES modules - imports must use `.js` extensions
+- Use cross-platform file utilities from `@base44/cli-core` for file operations
+- All data validation uses Zod schemas with type inference
 

@@ -1,8 +1,24 @@
-import { Command } from 'commander';
+import { Command } from "commander";
+import { log } from "@clack/prompts";
+import { deleteAuth } from "@base44/cli-core";
+import { runCommand } from "../../utils/index.js";
 
-export const logoutCommand = new Command('logout')
-  .description('Logout from current device')
+async function logout(): Promise<void> {
+  try {
+    await deleteAuth();
+    log.info("Logged out successfully");
+  } catch (error) {
+    if (error instanceof Error) {
+      log.error(error.message);
+    } else {
+      log.error("Failed to logout");
+    }
+  }
+}
+
+export const logoutCommand = new Command("logout")
+  .description("Logout from current device")
   .action(async () => {
-    console.log('Logout action - not yet implemented');
+    await runCommand(logout);
   });
 
