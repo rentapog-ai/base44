@@ -10,7 +10,7 @@ const program = new Command();
 
 program
   .name('base44')
-  .description('Base44 CLI - Unified interface for managing Base44 applications')
+  .description('Base44 CLI 2 - Unified interface for managing Base44 applications')
   .version(getPackageVersion());
 
 // Register authentication commands
