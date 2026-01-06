@@ -1,23 +1,98 @@
 import { Command } from "commander";
-import { tasks } from "@clack/prompts";
-import { writeAuth } from "../../../core/config/auth.js";
-import { runCommand } from "../../utils/index.js";
+import { log } from "@clack/prompts";
+import pWaitFor from "p-wait-for";
+import { writeAuth } from "@config/auth.js";
+import {
+  generateDeviceCode,
+  getTokenFromDeviceCode,
+  type DeviceCodeResponse,
+  type TokenResponse,
+} from "@api/auth";
+import { runCommand, runTask } from "../../utils/index.js";
+
+async function generateAndDisplayDeviceCode(): Promise<DeviceCodeResponse> {
+  const deviceCodeResponse = await runTask(
+    "Generating device code...",
+    async () => {
+      return await generateDeviceCode();
+    },
+    {
+      successMessage: "Device code generated",
+      errorMessage: "Failed to generate device code",
+    }
+  );
+
+  log.info(
+    `Please visit: ${deviceCodeResponse.verificationUrl}\n` +
+      `Enter your device code: ${deviceCodeResponse.userCode}`
+  );
+
+  return deviceCodeResponse;
+}
+
+async function waitForAuthentication(
+  deviceCode: string,
+  expiresIn: number
+): Promise<TokenResponse> {
+  let tokenResponse: TokenResponse | null = null;
+
+  try {
+    await runTask(
+      "Waiting for you to complete authentication...",
+      async () => {
+        await pWaitFor(
+          async () => {
+            const result = await getTokenFromDeviceCode(deviceCode);
+            if (result !== null) {
+              tokenResponse = result;
+              return true;
+            }
+            return false;
+          },
+          {
+            interval: 2000,
+            timeout: expiresIn * 1000,
+          }
+        );
+      },
+      {
+        successMessage: "Authentication completed!",
+        errorMessage: "Authentication failed",
+      }
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("timed out")) {
+      throw new Error("Authentication timed out. Please try again.");
+    }
+    throw error;
+  }
+
+  if (!tokenResponse) {
+    throw new Error("Failed to retrieve authentication token.");
+  }
+
+  return tokenResponse;
+}
+
+async function saveAuthData(token: TokenResponse): Promise<void> {
+  await writeAuth({
+    token: token.token,
+    email: token.email,
+    name: token.name,
+  });
+}
 
 async function login(): Promise<void> {
-  await tasks([
-    {
-      title: "Logging you in",
-      task: async () => {
-        await writeAuth({
-          token: "stub-token-12345",
-          email: "valid@email.com",
-          name: "KfirStri",
-        });
+  const deviceCodeResponse = await generateAndDisplayDeviceCode();
 
-        return "Logged in as KfirStri";
-      },
-    },
-  ]);
+  const token = await waitForAuthentication(
+    deviceCodeResponse.deviceCode,
+    deviceCodeResponse.expiresIn
+  );
+
+  await saveAuthData(token);
+
+  log.success(`Logged in as ${token.name}`);
 }
 
 export const loginCommand = new Command("login")
@@ -25,4 +100,3 @@ export const loginCommand = new Command("login")
   .action(async () => {
     await runCommand(login);
   });
-

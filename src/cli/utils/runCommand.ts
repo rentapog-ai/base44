@@ -1,5 +1,6 @@
-import { intro } from "@clack/prompts";
+import { intro, log } from "@clack/prompts";
 import chalk from "chalk";
+import { AuthApiError, AuthValidationError } from "@core/errors/index.js";
 
 const base44Color = chalk.bgHex("#E86B3C");
 
@@ -9,8 +10,24 @@ const base44Color = chalk.bgHex("#E86B3C");
  *
  * @param commandFn - The async function to execute as the command
  */
-export async function runCommand(commandFn: () => Promise<void>): Promise<void> {
+export async function runCommand(
+  commandFn: () => Promise<void>
+): Promise<void> {
   intro(base44Color(" Base 44 "));
-  await commandFn();
-}
 
+  try {
+    await commandFn();
+  } catch (e) {
+    if (e instanceof AuthValidationError) {
+      const issues = e.issues.map((i) => i.message).join(", ");
+      log.error(`Invalid response from server: ${issues}`);
+    } else if (e instanceof AuthApiError) {
+      log.error(e.message);
+    } else if (e instanceof Error) {
+      log.error(e.message);
+    } else {
+      log.error(String(e));
+    }
+    process.exit(1);
+  }
+}
