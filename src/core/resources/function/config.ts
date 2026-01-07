@@ -1,8 +1,8 @@
 import { globby } from "globby";
-import { FunctionConfigSchema } from "../schemas/function.js";
-import type { FunctionConfig } from "../schemas/function.js";
-import { FUNCTION_CONFIG_FILE } from "../consts.js";
-import { readJsonFile, pathExists } from "../utils/fs.js";
+import { FUNCTION_CONFIG_FILE } from "../../consts.js";
+import { readJsonFile, pathExists } from "../../utils/fs.js";
+import { FunctionConfigSchema } from "./schema.js";
+import type { FunctionConfig } from "./schema.js";
 
 export async function readFunctionConfig(
   configPath: string
@@ -39,3 +39,4 @@ export async function readAllFunctions(
 
   return functionConfigs;
 }
+
