@@ -1,12 +1,18 @@
 import { Command } from "commander";
+import chalk from "chalk";
 import { log } from "@clack/prompts";
 import pWaitFor from "p-wait-for";
 import {
   writeAuth,
   generateDeviceCode,
   getTokenFromDeviceCode,
+  getUserInfo,
 } from "@core/auth/index.js";
-import type { DeviceCodeResponse, TokenResponse } from "@core/auth/index.js";
+import type {
+  DeviceCodeResponse,
+  TokenResponse,
+  UserInfoResponse,
+} from "@core/auth/index.js";
 import { runCommand, runTask } from "../../utils/index.js";
 
 async function generateAndDisplayDeviceCode(): Promise<DeviceCodeResponse> {
@@ -22,8 +28,8 @@ async function generateAndDisplayDeviceCode(): Promise<DeviceCodeResponse> {
   );
 
   log.info(
-    `Please visit: ${deviceCodeResponse.verificationUrl}\n` +
-      `Enter your device code: ${deviceCodeResponse.userCode}`
+    `Your code is: ${chalk.bold(deviceCodeResponse.userCode)}` +
+      `\nPlease visit: ${deviceCodeResponse.verificationUriComplete}`
   );
 
   return deviceCodeResponse;
@@ -31,7 +37,8 @@ async function generateAndDisplayDeviceCode(): Promise<DeviceCodeResponse> {
 
 async function waitForAuthentication(
   deviceCode: string,
-  expiresIn: number
+  expiresIn: number,
+  interval: number
 ): Promise<TokenResponse> {
   let tokenResponse: TokenResponse | undefined;
 
@@ -49,7 +56,7 @@ async function waitForAuthentication(
             return false;
           },
           {
-            interval: 2000,
+            interval: interval * 1000,
             timeout: expiresIn * 1000,
           }
         );
@@ -73,11 +80,18 @@ async function waitForAuthentication(
   return tokenResponse;
 }
 
-async function saveAuthData(token: TokenResponse): Promise<void> {
+async function saveAuthData(
+  response: TokenResponse,
+  userInfo: UserInfoResponse
+): Promise<void> {
+  const expiresAt = Date.now() + response.expiresIn * 1000;
+
   await writeAuth({
-    token: token.token,
-    email: token.email,
-    name: token.name,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
+    expiresAt,
+    email: userInfo.email,
+    name: userInfo.name,
   });
 }
 
@@ -86,12 +100,15 @@ async function login(): Promise<void> {
 
   const token = await waitForAuthentication(
     deviceCodeResponse.deviceCode,
-    deviceCodeResponse.expiresIn
+    deviceCodeResponse.expiresIn,
+    deviceCodeResponse.interval
   );
 
-  await saveAuthData(token);
+  const userInfo = await getUserInfo(token.accessToken);
 
-  log.success(`Logged in as ${token.name}`);
+  await saveAuthData(token, userInfo);
+
+  log.success(`Successfully logged in as ${chalk.bold(userInfo.email)}`);
 }
 
 export const loginCommand = new Command("login")
