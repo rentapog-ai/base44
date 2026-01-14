@@ -6,6 +6,7 @@ import chalk from "chalk";
 import kebabCase from "lodash.kebabcase";
 import { createProjectFiles, listTemplates } from "@core/project/index.js";
 import type { Template } from "@core/project/index.js";
+import { getBase44ApiUrl } from "@core/config.js";
 import { runCommand, runTask, onPromptCancel } from "../../utils/index.js";
 
 async function create(): Promise<void> {
@@ -55,7 +56,7 @@ async function create(): Promise<void> {
   const resolvedPath = resolve(projectPath as string);
 
   // Create the project
-  await runTask(
+  const { projectId } = await runTask(
     "Creating project...",
     async () => {
       return await createProjectFiles({
@@ -72,6 +73,7 @@ async function create(): Promise<void> {
   );
 
   log.success(`Project ${chalk.bold(name)} has been initialized!`);
+  log.success(`Dashboard link:\n${chalk.bold(`${getBase44ApiUrl()}/apps/${projectId}/editor/preview`)}`);
 }
 
 export const createCommand = new Command("create")
