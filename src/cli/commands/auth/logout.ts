@@ -11,6 +11,6 @@ async function logout(): Promise<void> {
 export const logoutCommand = new Command("logout")
   .description("Logout from current device")
   .action(async () => {
-    await runCommand(logout);
+    await runCommand(logout, { requireAuth: true });
   });
 

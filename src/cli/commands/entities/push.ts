@@ -51,6 +51,6 @@ export const entitiesPushCommand = new Command("entities")
     new Command("push")
       .description("Push local entities to Base44")
       .action(async () => {
-        await runCommand(pushEntitiesAction);
+        await runCommand(pushEntitiesAction, { requireAuth: true });
       })
   );
