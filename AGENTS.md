@@ -61,6 +61,12 @@ cli/
 │   │   │   │   ├── resource.ts
 │   │   │   │   └── index.ts
 │   │   │   └── index.ts
+│   │   ├── site/                 # Site deployment (NOT a Resource)
+│   │   │   ├── schema.ts         # DeployResponse Zod schema
+│   │   │   ├── config.ts         # getSiteFilePaths() - glob files for validation
+│   │   │   ├── api.ts            # uploadSite() - reads archive, sends to API
+│   │   │   ├── deploy.ts         # deploySite() - validates, creates tar.gz, uploads
+│   │   │   └── index.ts
 │   │   ├── utils/
 │   │   │   ├── fs.ts             # File system utilities
 │   │   │   └── index.ts
@@ -78,6 +84,8 @@ cli/
 │       │   │   └── create.ts
 │       │   └── entities/
 │       │       └── push.ts
+│       │   └── site/
+│       │       └── deploy.ts
 │       ├── utils/
 │       │   ├── runCommand.ts     # Command wrapper with branding
 │       │   ├── runTask.ts        # Spinner wrapper
@@ -230,6 +238,48 @@ export const entityResource: Resource<Entity> = {
 7. Update `resources/index.ts` to export the new resource
 8. Register in `project/config.ts` (add to `readProjectConfig`)
 9. Add typed field to `ProjectData` interface
+
+## Site Module
+
+The site module (`src/core/site/`) handles deploying built frontend files to Base44 hosting. Unlike Resources, the site module:
+
+- Reads built artifacts (JS, CSS, HTML) from the output directory
+- Gets configuration from `site.outputDirectory` in project config
+- Creates a tar.gz archive and uploads it to the API
+
+### Architecture
+
+```
+site/
+├── schema.ts    # DeployResponse Zod schema
+├── config.ts    # getSiteFilePaths() - glob files for validation
+├── api.ts       # uploadSite() - reads archive, sends to API
+├── deploy.ts    # deploySite() - validates, creates archive, uploads
+└── index.ts     # Barrel exports
+```
+
+### Key Functions
+
+```typescript
+import { deploySite } from "@core/site/index.js";
+
+// Deploy site from output directory (returns deployment details)
+const { app_url, files_count } = await deploySite("./dist");
+```
+
+### Deploy Flow
+
+1. Validate output directory exists and has files
+2. Create temporary tar.gz archive using `tar` package
+3. Upload archive to `POST /api/apps/{app_id}/deploy-dist`
+4. Parse response with Zod schema
+5. Clean up temporary archive file
+
+### CLI Command
+
+```bash
+base44 site deploy
+```
 
 ## Path Aliases
 
