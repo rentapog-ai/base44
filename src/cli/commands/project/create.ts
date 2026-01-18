@@ -1,12 +1,14 @@
-import { resolve } from "node:path";
+import { resolve, join } from "node:path";
+import { execa } from "execa";
 import { Command } from "commander";
-import { log, group, text, select } from "@clack/prompts";
+import { log, group, text, select, confirm, isCancel } from "@clack/prompts";
 import type { Option } from "@clack/prompts";
 import chalk from "chalk";
 import kebabCase from "lodash.kebabcase";
-import { createProjectFiles, listTemplates } from "@core/project/index.js";
+import { createProjectFiles, listTemplates, readProjectConfig } from "@core/project/index.js";
 import type { Template } from "@core/project/index.js";
-import { getBase44ApiUrl } from "@core/config.js";
+import { getBase44ApiUrl, loadProjectEnv } from "@core/config.js";
+import { deploySite, pushEntities } from "@core/index.js";
 import { runCommand, runTask, onPromptCancel } from "../../utils/index.js";
 
 async function create(): Promise<void> {
@@ -72,8 +74,81 @@ async function create(): Promise<void> {
     }
   );
 
-  log.success(`Project ${chalk.bold(name)} has been initialized!`);
+  // Set the project ID in the environment variables for following client calls
+  await loadProjectEnv();
+
   log.success(`Dashboard link:\n${chalk.bold(`${getBase44ApiUrl()}/apps/${projectId}/editor/preview`)}`);
+
+  const { project, entities } = await readProjectConfig(resolvedPath);
+
+  // Prompt to push entities if needed
+  if (entities.length > 0) {
+    const shouldPushEntities = await confirm({
+      message: 'Would you like to push entities now?',
+    })
+
+    if (!isCancel(shouldPushEntities) && shouldPushEntities) {
+      await runTask(
+        `Pushing ${entities.length} entities to Base44...`,
+        async () => {
+          await pushEntities(entities);
+        },
+        {
+          successMessage: "Entities pushed successfully",
+          errorMessage: "Failed to push entities",
+        }
+      );
+    }
+  }
+
+  // Prompt to install dependencies if needed
+  if (project.site) {
+    const installCommand = project.site.installCommand;
+    const buildCommand = project.site.buildCommand;
+
+    const shouldDeploy = await confirm({
+      message: 'Would you like to deploy the site now?'
+    })
+
+    if (!isCancel(shouldDeploy) && shouldDeploy && installCommand && buildCommand) {
+      await runTask(
+        "Installing dependencies...",
+        async () => {
+          await execa({ cwd: resolvedPath, shell: true })`${installCommand}`;
+        },
+        {
+          successMessage: "Dependencies installed successfully",
+          errorMessage: "Failed to install dependencies",
+        }
+      );
+
+      await runTask(
+        "Building project output...",
+        async () => {
+          await execa({ cwd: resolvedPath, shell: true })`${buildCommand}`;
+        },
+        {
+          successMessage: "Project output built successfully",
+          errorMessage: "Failed to build project output",
+        }
+      );
+
+      const { app_url } = await runTask(
+        "Deploying site...",
+        async () => {
+          return await deploySite(join(resolvedPath, project.site!.outputDirectory!));
+        },
+        {
+          successMessage: "Site deployed successfully",
+          errorMessage: "Failed to deploy site",
+        }
+      );
+
+      log.success(`Visit your site on ${app_url}`);
+    }
+  }
+
+  log.success(`Project ${chalk.bold(name)} is set and ready to use!`);
 }
 
 export const createCommand = new Command("create")
