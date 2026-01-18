@@ -1,7 +1,7 @@
 import { resolve, join } from "node:path";
 import { execa } from "execa";
 import { Command } from "commander";
-import { log, group, text, select, confirm, isCancel } from "@clack/prompts";
+import { log, group, text, select, confirm, intro, outro, isCancel } from "@clack/prompts";
 import type { Option } from "@clack/prompts";
 import chalk from "chalk";
 import kebabCase from "lodash.kebabcase";
@@ -11,7 +11,12 @@ import { getBase44ApiUrl, loadProjectEnv } from "@core/config.js";
 import { deploySite, pushEntities } from "@core/index.js";
 import { runCommand, runTask, onPromptCancel } from "../../utils/index.js";
 
+const orange = chalk.hex("#E86B3C");
+const cyan = chalk.hex("#00D4FF");
+
 async function create(): Promise<void> {
+  intro("Let's create something amazing!");
+
   const templates = await listTemplates();
   const templateOptions: Array<Option<Template>> = templates.map((t) => ({
     value: t,
@@ -23,22 +28,22 @@ async function create(): Promise<void> {
     {
       template: () =>
         select({
-          message: "Select a project template",
+          message: "Pick a template",
           options: templateOptions,
         }),
       name: () =>
         text({
           message: "What is the name of your project?",
-          placeholder: "my-app-backend",
+          placeholder: "my-app",
           validate: (value) => {
             if (!value || value.trim().length === 0) {
-              return "Project name is required";
+              return "Every project deserves a name";
             }
           },
         }),
       description: () =>
         text({
-          message: "Project description (optional)",
+          message: "Description (optional)",
           placeholder: "A brief description of your project",
         }),
       projectPath: async ({ results }) => {
@@ -59,7 +64,7 @@ async function create(): Promise<void> {
 
   // Create the project
   const { projectId } = await runTask(
-    "Creating project...",
+    "Setting up your project...",
     async () => {
       return await createProjectFiles({
         name: name.trim(),
@@ -69,7 +74,7 @@ async function create(): Promise<void> {
       });
     },
     {
-      successMessage: "Project created successfully",
+      successMessage: orange("Project created successfully"),
       errorMessage: "Failed to create project",
     }
   );
@@ -77,9 +82,8 @@ async function create(): Promise<void> {
   // Set the project ID in the environment variables for following client calls
   await loadProjectEnv();
 
-  log.success(`Dashboard link:\n${chalk.bold(`${getBase44ApiUrl()}/apps/${projectId}/editor/preview`)}`);
-
   const { project, entities } = await readProjectConfig(resolvedPath);
+  let appUrl: string | undefined;
 
   // Prompt to push entities if needed
   if (entities.length > 0) {
@@ -94,7 +98,7 @@ async function create(): Promise<void> {
           await pushEntities(entities);
         },
         {
-          successMessage: "Entities pushed successfully",
+          successMessage: orange("Entities pushed successfully"),
           errorMessage: "Failed to push entities",
         }
       );
@@ -111,44 +115,38 @@ async function create(): Promise<void> {
     })
 
     if (!isCancel(shouldDeploy) && shouldDeploy && installCommand && buildCommand) {
-      await runTask(
-        "Installing dependencies...",
-        async () => {
-          await execa({ cwd: resolvedPath, shell: true })`${installCommand}`;
-        },
-        {
-          successMessage: "Dependencies installed successfully",
-          errorMessage: "Failed to install dependencies",
-        }
-      );
-
-      await runTask(
-        "Building project output...",
-        async () => {
-          await execa({ cwd: resolvedPath, shell: true })`${buildCommand}`;
-        },
-        {
-          successMessage: "Project output built successfully",
-          errorMessage: "Failed to build project output",
-        }
-      );
-
       const { app_url } = await runTask(
-        "Deploying site...",
-        async () => {
+        "Installing dependencies...",
+        async (updateMessage) => {
+          await execa({ cwd: resolvedPath, shell: true })`${installCommand}`;
+
+          updateMessage("Building project...");
+          await execa({ cwd: resolvedPath, shell: true })`${buildCommand}`;
+
+          updateMessage("Deploying site...");
           return await deploySite(join(resolvedPath, project.site!.outputDirectory!));
         },
         {
-          successMessage: "Site deployed successfully",
+          successMessage: orange("Site deployed successfully"),
           errorMessage: "Failed to deploy site",
         }
       );
 
-      log.success(`Visit your site on ${app_url}`);
+      appUrl = app_url;
     }
   }
 
-  log.success(`Project ${chalk.bold(name)} is set and ready to use!`);
+  const dashboardUrl = `${getBase44ApiUrl()}/apps/${projectId}/editor/preview`;
+
+  log.message(`${chalk.dim("Project")}: ${orange(name.trim())}`);
+  log.message(`${chalk.dim("Dashboard")}: ${cyan(dashboardUrl)}`);
+
+
+  if (appUrl) {
+    log.message(`${chalk.dim("Site")}: ${cyan(appUrl)}`);
+  }
+
+  outro("Your project is set and ready to use");
 }
 
 export const createCommand = new Command("create")

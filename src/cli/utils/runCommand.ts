@@ -49,7 +49,7 @@ export async function runCommand(
   options?: RunCommandOptions
 ): Promise<void> {
   if (options?.fullBanner) {
-    printBanner();
+    await printBanner();
   } else {
     intro(base44Color(" Base 44 "));
   }
