@@ -14,8 +14,44 @@ import type { RunCommandResult } from "../../utils/runCommand.js";
 
 const orange = chalk.hex("#E86B3C");
 const cyan = chalk.hex("#00D4FF");
+const DEFAULT_TEMPLATE_ID = "backend-only";
 
-async function create(): Promise<RunCommandResult> {
+interface CreateOptions {
+  name?: string;
+  description?: string;
+  path?: string;
+  deploy?: boolean;
+}
+
+async function getDefaultTemplate(): Promise<Template> {
+  const templates = await listTemplates();
+  const template = templates.find((t) => t.id === DEFAULT_TEMPLATE_ID);
+  if (!template) {
+    throw new Error(`Default template "${DEFAULT_TEMPLATE_ID}" not found`);
+  }
+  return template;
+}
+
+function validateNonInteractiveFlags(command: Command): void {
+  const { name, path } = command.opts<CreateOptions>();
+  const providedCount = [name, path].filter(Boolean).length;
+
+  if (providedCount > 0 && providedCount < 2) {
+    command.error("Non-interactive mode requires all flags: --name, --path");
+  }
+}
+
+async function chooseCreate(options: CreateOptions): Promise<void> {
+  const isNonInteractive = !!(options.name && options.path);
+
+  if (isNonInteractive) {
+    await runCommand(() => createNonInteractive(options), { requireAuth: true });
+  } else {
+    await runCommand(() => createInteractive(options), { fullBanner: true, requireAuth: true });
+  }
+}
+
+async function createInteractive(options: CreateOptions): Promise<RunCommandResult> {
   const templates = await listTemplates();
   const templateOptions: Array<Option<Template>> = templates.map((t) => ({
     value: t,
@@ -23,7 +59,7 @@ async function create(): Promise<RunCommandResult> {
     hint: t.description,
   }));
 
-  const { template, name, description, projectPath } = await group(
+  const result = await group(
     {
       template: () =>
         select({
@@ -59,15 +95,53 @@ async function create(): Promise<RunCommandResult> {
     }
   );
 
-  const resolvedPath = resolve(projectPath as string);
+  return await executeCreate({
+    template: result.template,
+    name: result.name,
+    description: result.description || undefined,
+    projectPath: result.projectPath as string,
+    deploy: options.deploy,
+    isInteractive: true,
+  });
+}
 
-  // Create the project
+async function createNonInteractive(options: CreateOptions): Promise<RunCommandResult> {
+  const template = await getDefaultTemplate();
+
+  return await executeCreate({
+    template,
+    name: options.name!,
+    description: options.description,
+    projectPath: options.path!,
+    deploy: options.deploy,
+    isInteractive: false,
+  });
+}
+
+async function executeCreate({
+  template,
+  name: rawName,
+  description,
+  projectPath,
+  deploy,
+  isInteractive,
+}: {
+  template: Template;
+  name: string;
+  description?: string;
+  projectPath: string;
+  deploy?: boolean;
+  isInteractive: boolean;
+}): Promise<RunCommandResult> {
+  const name = rawName.trim();
+  const resolvedPath = resolve(projectPath);
+
   const { projectId } = await runTask(
     "Setting up your project...",
     async () => {
       return await createProjectFiles({
-        name: name.trim(),
-        description: description ? description.trim() : undefined,
+        name,
+        description: description?.trim(),
         path: resolvedPath,
         template,
       });
@@ -78,19 +152,24 @@ async function create(): Promise<RunCommandResult> {
     }
   );
 
-  // Set the project ID in the environment variables for following client calls
   await loadProjectEnv(resolvedPath);
 
   const { project, entities } = await readProjectConfig(resolvedPath);
   let finalAppUrl: string | undefined;
 
-  // Prompt to push entities if needed
   if (entities.length > 0) {
-    const shouldPushEntities = await confirm({
-      message: 'Would you like to push entities now?',
-    })
+    let shouldPushEntities: boolean;
 
-    if (!isCancel(shouldPushEntities) && shouldPushEntities) {
+    if (isInteractive) {
+      const result = await confirm({
+        message: "Would you like to push entities now?",
+      });
+      shouldPushEntities = !isCancel(result) && result;
+    } else {
+      shouldPushEntities = !!deploy;
+    }
+
+    if (shouldPushEntities) {
       await runTask(
         `Pushing ${entities.length} entities to Base44...`,
         async () => {
@@ -104,17 +183,21 @@ async function create(): Promise<RunCommandResult> {
     }
   }
 
-  // Prompt to install dependencies if needed
   if (project.site) {
-    const installCommand = project.site.installCommand;
-    const buildCommand = project.site.buildCommand;
-    const outputDirectory = project.site.outputDirectory;
+    const { installCommand, buildCommand, outputDirectory } = project.site;
 
-    const shouldDeploy = await confirm({
-      message: 'Would you like to deploy the site now?'
-    })
+    let shouldDeploy: boolean;
 
-    if (!isCancel(shouldDeploy) && shouldDeploy && installCommand && buildCommand && outputDirectory) {
+    if (isInteractive) {
+      const result = await confirm({
+        message: "Would you like to deploy the site now?",
+      });
+      shouldDeploy = !isCancel(result) && result;
+    } else {
+      shouldDeploy = !!deploy;
+    }
+
+    if (shouldDeploy && installCommand && buildCommand && outputDirectory) {
       const { appUrl } = await runTask(
         "Installing dependencies...",
         async (updateMessage) => {
@@ -138,9 +221,8 @@ async function create(): Promise<RunCommandResult> {
 
   const dashboardUrl = `${getBase44ApiUrl()}/apps/${projectId}/editor/preview`;
 
-  log.message(`${chalk.dim("Project")}: ${orange(name.trim())}`);
+  log.message(`${chalk.dim("Project")}: ${orange(name)}`);
   log.message(`${chalk.dim("Dashboard")}: ${cyan(dashboardUrl)}`);
-
 
   if (finalAppUrl) {
     log.message(`${chalk.dim("Site")}: ${cyan(finalAppUrl)}`);
@@ -151,6 +233,11 @@ async function create(): Promise<RunCommandResult> {
 
 export const createCommand = new Command("create")
   .description("Create a new Base44 project")
-  .action(async () => {
-    await runCommand(create, { fullBanner: true, requireAuth: true });
+  .option("-n, --name <name>", "Project name")
+  .option("-d, --description <description>", "Project description")
+  .option("-p, --path <path>", "Path where to create the project")
+  .option("--deploy", "Build and deploy the site")
+  .hook("preAction", validateNonInteractiveFlags)
+  .action(async (options: CreateOptions) => {
+    await chooseCreate(options);
   });
