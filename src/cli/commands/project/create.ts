@@ -3,17 +3,14 @@ import { execa } from "execa";
 import { Command } from "commander";
 import { log, group, text, select, confirm, isCancel } from "@clack/prompts";
 import type { Option } from "@clack/prompts";
-import chalk from "chalk";
 import kebabCase from "lodash.kebabcase";
 import { createProjectFiles, listTemplates, readProjectConfig } from "@core/project/index.js";
 import type { Template } from "@core/project/index.js";
 import { getBase44ApiUrl, loadProjectEnv } from "@core/config.js";
 import { deploySite, pushEntities } from "@core/index.js";
-import { runCommand, runTask, onPromptCancel } from "../../utils/index.js";
+import { runCommand, runTask, onPromptCancel, theme } from "../../utils/index.js";
 import type { RunCommandResult } from "../../utils/runCommand.js";
 
-const orange = chalk.hex("#E86B3C");
-const cyan = chalk.hex("#00D4FF");
 const DEFAULT_TEMPLATE_ID = "backend-only";
 
 interface CreateOptions {
@@ -147,7 +144,7 @@ async function executeCreate({
       });
     },
     {
-      successMessage: orange("Project created successfully"),
+      successMessage: theme.colors.base44Orange("Project created successfully"),
       errorMessage: "Failed to create project",
     }
   );
@@ -176,7 +173,7 @@ async function executeCreate({
           await pushEntities(entities);
         },
         {
-          successMessage: orange("Entities pushed successfully"),
+          successMessage: theme.colors.base44Orange("Entities pushed successfully"),
           errorMessage: "Failed to push entities",
         }
       );
@@ -210,7 +207,7 @@ async function executeCreate({
           return await deploySite(join(resolvedPath, outputDirectory));
         },
         {
-          successMessage: orange("Site deployed successfully"),
+          successMessage: theme.colors.base44Orange("Site deployed successfully"),
           errorMessage: "Failed to deploy site",
         }
       );
@@ -221,11 +218,11 @@ async function executeCreate({
 
   const dashboardUrl = `${getBase44ApiUrl()}/apps/${projectId}/editor/preview`;
 
-  log.message(`${chalk.dim("Project")}: ${orange(name)}`);
-  log.message(`${chalk.dim("Dashboard")}: ${cyan(dashboardUrl)}`);
+  log.message(`${theme.styles.header("Project")}: ${theme.colors.base44Orange(name)}`);
+  log.message(`${theme.styles.header("Dashboard")}: ${theme.colors.links(dashboardUrl)}`);
 
   if (finalAppUrl) {
-    log.message(`${chalk.dim("Site")}: ${cyan(finalAppUrl)}`);
+    log.message(`${theme.styles.header("Site")}: ${theme.colors.links(finalAppUrl)}`);
   }
 
   return { outroMessage: "Your project is set and ready to use" };
