@@ -135,8 +135,8 @@ jobs:
             ```
 
           claude_args: |
-            --allowed-tools "Bash(git log:*),Bash(gh pr:*),Read,Write"
-            --model "claude-sonnet-4-20250514"
+            --allowed-tools "Bash(git log:*),Bash(gh pr:*),Read(*),Write(CHANGELOG.md)"
+            --model "haiku"
 
       - name: Build package
         run: npm run build
