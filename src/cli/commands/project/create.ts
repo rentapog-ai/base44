@@ -81,7 +81,7 @@ async function createInteractive(options: CreateOptions): Promise<RunCommandResu
       projectPath: async ({ results }) => {
         const suggestedPath = `./${kebabCase(results.name)}`;
         return text({
-          message: "Where should we create the base44 folder?",
+          message: "Where should we create your project?",
           placeholder: suggestedPath,
           initialValue: suggestedPath,
         });
@@ -159,7 +159,7 @@ async function executeCreate({
 
     if (isInteractive) {
       const result = await confirm({
-        message: "Would you like to push entities now?",
+        message: "Set up the backend data now? (This pushes the data models used by the template to Base44)",
       });
       shouldPushEntities = !isCancel(result) && result;
     } else {
@@ -168,13 +168,13 @@ async function executeCreate({
 
     if (shouldPushEntities) {
       await runTask(
-        `Pushing ${entities.length} entities to Base44...`,
+        `Pushing ${entities.length} data models to Base44...`,
         async () => {
           await pushEntities(entities);
         },
         {
-          successMessage: theme.colors.base44Orange("Entities pushed successfully"),
-          errorMessage: "Failed to push entities",
+          successMessage: theme.colors.base44Orange("Data models pushed successfully"),
+          errorMessage: "Failed to push data models",
         }
       );
     }
@@ -187,7 +187,7 @@ async function executeCreate({
 
     if (isInteractive) {
       const result = await confirm({
-        message: "Would you like to deploy the site now?",
+        message: "Would you like to deploy the site now? (Hosted on Base44)",
       });
       shouldDeploy = !isCancel(result) && result;
     } else {
@@ -225,7 +225,7 @@ async function executeCreate({
     log.message(`${theme.styles.header("Site")}: ${theme.colors.links(finalAppUrl)}`);
   }
 
-  return { outroMessage: "Your project is set and ready to use" };
+  return { outroMessage: "Your project is set up and ready to use" };
 }
 
 export const createCommand = new Command("create")
