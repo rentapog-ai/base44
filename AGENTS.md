@@ -59,6 +59,8 @@ cli/
 │   │   │   │   ├── schema.ts
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── resource.ts
+│   │   │   │   ├── api.ts
+│   │   │   │   ├── deploy.ts
 │   │   │   │   └── index.ts
 │   │   │   └── index.ts
 │   │   ├── site/                 # Site deployment (NOT a Resource)
@@ -82,8 +84,10 @@ cli/
 │       │   │   └── whoami.ts
 │       │   ├── project/
 │       │   │   └── create.ts
-│       │   └── entities/
-│       │       └── push.ts
+│       │   ├── entities/
+│       │   │   └── push.ts
+│       │   ├── functions/
+│       │   │   └── deploy.ts
 │       │   └── site/
 │       │       └── deploy.ts
 │       ├── utils/
@@ -333,6 +337,7 @@ import { base44Client } from "@core/api/index.js";
 9. **Keep AGENTS.md updated** - Update this file when architecture changes
 10. **Zero-dependency distribution** - All packages go in `devDependencies`; they get bundled at build time
 11. **Use theme for styling** - Never use `chalk` directly in commands; import `theme` from utils and use semantic color/style names
+12. **Use fs.ts utilities** - Always use `@core/utils/fs.js` for file operations 
 
 ## Development
 
