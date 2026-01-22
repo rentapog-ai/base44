@@ -17,14 +17,16 @@ interface CreateOptions {
   name?: string;
   description?: string;
   path?: string;
+  template?: string;
   deploy?: boolean;
 }
 
-async function getDefaultTemplate(): Promise<Template> {
+async function getTemplateById(templateId: string): Promise<Template> {
   const templates = await listTemplates();
-  const template = templates.find((t) => t.id === DEFAULT_TEMPLATE_ID);
+  const template = templates.find((t) => t.id === templateId);
   if (!template) {
-    throw new Error(`Default template "${DEFAULT_TEMPLATE_ID}" not found`);
+    const validIds = templates.map((t) => t.id).join(", ");
+    throw new Error(`Template "${templateId}" not found. Available templates: ${validIds}`);
   }
   return template;
 }
@@ -103,7 +105,7 @@ async function createInteractive(options: CreateOptions): Promise<RunCommandResu
 }
 
 async function createNonInteractive(options: CreateOptions): Promise<RunCommandResult> {
-  const template = await getDefaultTemplate();
+  const template = await getTemplateById(options.template ?? DEFAULT_TEMPLATE_ID);
 
   return await executeCreate({
     template,
@@ -233,6 +235,7 @@ export const createCommand = new Command("create")
   .option("-n, --name <name>", "Project name")
   .option("-d, --description <description>", "Project description")
   .option("-p, --path <path>", "Path where to create the project")
+  .option("-t, --template <id>", "Template ID (e.g., backend-only, backend-and-client)")
   .option("--deploy", "Build and deploy the site")
   .hook("preAction", validateNonInteractiveFlags)
   .action(async (options: CreateOptions) => {
