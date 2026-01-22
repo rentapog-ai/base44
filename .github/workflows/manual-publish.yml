@@ -135,7 +135,7 @@ jobs:
             ```
 
           claude_args: |
-            --allowed-tools "Bash(git log:*),Bash(gh pr:*),Read(*),Write(CHANGELOG.md)"
+            --allowed-tools "Bash(git log:*),Bash(gh pr:*),Read(*),Edit(CHANGELOG.md)"
             --model "haiku"
 
       - name: Build package
