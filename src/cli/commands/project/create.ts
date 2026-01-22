@@ -4,9 +4,8 @@ import { Command } from "commander";
 import { log, group, text, select, confirm, isCancel } from "@clack/prompts";
 import type { Option } from "@clack/prompts";
 import kebabCase from "lodash.kebabcase";
-import { createProjectFiles, listTemplates, readProjectConfig } from "@core/project/index.js";
+import { createProjectFiles, listTemplates, readProjectConfig, setAppConfig } from "@core/project/index.js";
 import type { Template } from "@core/project/index.js";
-import { loadProjectEnv } from "@core/config.js";
 import { deploySite, pushEntities } from "@core/index.js";
 import {
   runCommand,
@@ -50,9 +49,9 @@ async function chooseCreate(options: CreateOptions): Promise<void> {
   const isNonInteractive = !!(options.name && options.path);
 
   if (isNonInteractive) {
-    await runCommand(() => createNonInteractive(options), { requireAuth: true });
+    await runCommand(() => createNonInteractive(options), { requireAuth: true, requireAppConfig: false });
   } else {
-    await runCommand(() => createInteractive(options), { fullBanner: true, requireAuth: true });
+    await runCommand(() => createInteractive(options), { fullBanner: true, requireAuth: true, requireAppConfig: false });
   }
 }
 
@@ -157,7 +156,8 @@ async function executeCreate({
     }
   );
 
-  await loadProjectEnv(resolvedPath);
+  // Set app config in cache for sync access to getDashboardUrl and getAppClient
+  setAppConfig({ id: projectId, projectRoot: resolvedPath });
 
   const { project, entities } = await readProjectConfig(resolvedPath);
   let finalAppUrl: string | undefined;

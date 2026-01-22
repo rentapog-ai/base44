@@ -4,8 +4,9 @@ import type { Option } from "@clack/prompts";
 import {
   findProjectRoot,
   createProject,
-  writeEnvLocal,
-  envLocalExists,
+  writeAppConfig,
+  appConfigExists,
+  setAppConfig,
 } from "@core/project/index.js";
 import {
   runCommand,
@@ -84,9 +85,9 @@ async function link(options: LinkOptions): Promise<RunCommandResult> {
     );
   }
 
-  if (await envLocalExists(projectRoot.root)) {
+  if (await appConfigExists(projectRoot.root)) {
     throw new Error(
-      "Project is already linked. A .env.local file with BASE44_CLIENT_ID already exists."
+      "Project is already linked. An .app.jsonc file with the appId already exists."
     );
   }
 
@@ -106,7 +107,10 @@ async function link(options: LinkOptions): Promise<RunCommandResult> {
     }
   );
 
-  await writeEnvLocal(projectRoot.root, projectId);
+  await writeAppConfig(projectRoot.root, projectId);
+
+  // Set app config in cache for sync access to getDashboardUrl
+  setAppConfig({ id: projectId, projectRoot: projectRoot.root });
 
   log.message(`${theme.styles.header("Dashboard")}: ${theme.colors.links(getDashboardUrl(projectId))}`);
 
@@ -120,5 +124,5 @@ export const linkCommand = new Command("link")
   .option("-d, --description <description>", "Project description")
   .hook("preAction", validateNonInteractiveFlags)
   .action(async (options: LinkOptions) => {
-    await runCommand(() => link(options), { requireAuth: true });
+    await runCommand(() => link(options), { requireAuth: true, requireAppConfig: false });
   });
