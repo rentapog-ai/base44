@@ -1,7 +1,7 @@
 import { resolve, join } from "node:path";
 import { execa } from "execa";
 import { Command } from "commander";
-import { log, group, text, select, multiselect, confirm, isCancel } from "@clack/prompts";
+import { log, group, text, select, confirm, isCancel } from "@clack/prompts";
 import type { Option } from "@clack/prompts";
 import kebabCase from "lodash.kebabcase";
 import { createProjectFiles, listTemplates, readProjectConfig, setAppConfig } from "@core/project/index.js";
@@ -17,11 +17,6 @@ import {
 import type { RunCommandResult } from "../../utils/runCommand.js";
 
 const DEFAULT_TEMPLATE_ID = "backend-only";
-
-const SUPPORTED_AGENTS = [
-  { value: "cursor", label: "Cursor" },
-  { value: "claude-code", label: "Claude Code" },
-];
 
 interface CreateOptions {
   name?: string;
@@ -235,36 +230,22 @@ async function executeCreate({
   }
 
   // Add AI agent skills
-  let selectedAgents: string[] = [];
+  let shouldAddSkills = false;
 
   if (isInteractive) {
-    const result = await multiselect({
-      message: "Add AI agent skills? (Select agents to configure)",
-      options: SUPPORTED_AGENTS,
-      initialValues: SUPPORTED_AGENTS.map((agent) => agent.value),
-      required: false,
+    const result = await confirm({
+      message: "Add AI agent skills?",
     });
-
-    if (!isCancel(result)) {
-      selectedAgents = result;
-    }
-  } else if (skills) {
-    selectedAgents = SUPPORTED_AGENTS.map((agent) => agent.value);
+    shouldAddSkills = !isCancel(result) && result;
+  } else {
+    shouldAddSkills = !!skills;
   }
 
-  if (selectedAgents.length > 0) {
-    const agentArgs = selectedAgents.flatMap((agent) => ["-a", agent]);
-    log.step(`Installing skills for: ${selectedAgents.join(", ")}`);
-
+  if (shouldAddSkills) {
     await runTask(
-      `Installing skills for: ${selectedAgents.join(", ")}`,
+      "Installing AI agent skills...",
       async () => {
-        await execa("npx", [
-          "-y", "add-skill", "base44/skills",
-          "-y",  // Skip add-skill prompts (use defaults: project scope, symlink)
-          "-s", "base44-cli", "-s", "base44-sdk",
-          ...agentArgs
-        ], {
+        await execa("npx", ["-y", "add-skill", "base44/skills", "-y"], {
           cwd: resolvedPath,
           stdio: "inherit",
         });
@@ -293,7 +274,7 @@ export const createCommand = new Command("create")
   .option("-p, --path <path>", "Path where to create the project")
   .option("-t, --template <id>", "Template ID (e.g., backend-only, backend-and-client)")
   .option("--deploy", "Build and deploy the site")
-  .option("--skills", "Add AI agent skills (Cursor, Claude Code)")
+  .option("--skills", "Add AI agent skills")
   .hook("preAction", validateNonInteractiveFlags)
   .action(async (options: CreateOptions) => {
     await chooseCreate(options);
