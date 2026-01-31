@@ -3,6 +3,7 @@ import { log } from "@clack/prompts";
 import type { CLIContext } from "@/cli/types.js";
 import { pushFunctions } from "@/core/resources/function/index.js";
 import { readProjectConfig } from "@/core/index.js";
+import { ApiError } from "@/core/errors.js";
 import { runCommand, runTask } from "@/cli/utils/index.js";
 import type { RunCommandResult } from "@/cli/utils/runCommand.js";
 
@@ -41,7 +42,12 @@ async function deployFunctionsAction(): Promise<RunCommandResult> {
     const errorMessages = result.errors
       .map((e) => `'${e.name}' function: ${e.message}`)
       .join("\n");
-    throw new Error(`Function deployment errors:\n${errorMessages}`);
+    throw new ApiError(`Function deployment errors:\n${errorMessages}`, {
+      hints: [
+        { message: "Check the function code for syntax errors" },
+        { message: "Ensure all imports are valid" },
+      ],
+    });
   }
 
   return { outroMessage: "Functions deployed to Base44" };

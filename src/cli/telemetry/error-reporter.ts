@@ -2,6 +2,7 @@ import { release, type } from "node:os";
 import { nanoid } from "nanoid";
 import { determineAgent } from "@vercel/detect-agent";
 import { getPostHogClient, isTelemetryEnabled } from "./posthog.js";
+import { isCLIError, isUserError } from "@/core/errors.js";
 import packageJson from "../../../package.json";
 
 /**
@@ -58,8 +59,12 @@ export class ErrorReporter {
     return this.context.user?.email ?? `anon-${this.sessionId}`;
   }
 
-  private buildProperties(): Record<string, unknown> {
+  private buildProperties(error?: Error): Record<string, unknown> {
     const { user, command, appId, api } = this.context;
+
+    // Extract CLIError-specific properties if applicable
+    const errorCode = error && isCLIError(error) ? error.code : undefined;
+    const userError = error ? isUserError(error) : undefined;
 
     return {
       // Session
@@ -77,6 +82,12 @@ export class ErrorReporter {
 
       // App
       app_id: appId,
+
+      // Error context (from CLIError)
+      ...(errorCode !== undefined && {
+        error_code: errorCode,
+        is_user_error: userError,
+      }),
 
       // API error
       api_status_code: api?.statusCode,
@@ -100,6 +111,11 @@ export class ErrorReporter {
     };
   }
 
+  /**
+   * Capture an exception and report it to PostHog.
+   * Includes error code and isUserError for CLIError instances.
+   * Safe to call - never throws, logs errors to console.
+   */
   captureException(error: Error): void {
     if (!isTelemetryEnabled()) {
       return;
@@ -107,7 +123,7 @@ export class ErrorReporter {
 
     try {
       const client = getPostHogClient();
-      client?.captureException(error, this.getDistinctId(), this.buildProperties());
+      client?.captureException(error, this.getDistinctId(), this.buildProperties(error));
     } catch {
       // Silent - don't let error reporting break the CLI
     }

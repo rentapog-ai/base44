@@ -4,6 +4,7 @@ import { confirm, isCancel } from "@clack/prompts";
 import type { CLIContext } from "@/cli/types.js";
 import { readProjectConfig } from "@/core/project/index.js";
 import { deploySite } from "@/core/site/index.js";
+import { ConfigNotFoundError } from "@/core/errors.js";
 import { runCommand, runTask } from "@/cli/utils/index.js";
 import type { RunCommandResult } from "@/cli/utils/runCommand.js";
 
@@ -15,8 +16,13 @@ async function deployAction(options: DeployOptions): Promise<RunCommandResult> {
   const { project } = await readProjectConfig();
 
   if (!project.site?.outputDirectory) {
-    throw new Error(
-      "No site configuration found. Please add 'site.outputDirectory' to your config.jsonc"
+    throw new ConfigNotFoundError(
+      "No site configuration found.",
+      {
+        hints: [
+          { message: "Add 'site.outputDirectory' to your config.jsonc (e.g., \"site\": { \"outputDirectory\": \"dist\" })" },
+        ],
+      }
     );
   }
 
