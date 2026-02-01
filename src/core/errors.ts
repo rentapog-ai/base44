@@ -10,6 +10,42 @@
  */
 
 import { z } from "zod";
+import { HTTPError } from "ky";
+import { ApiErrorResponseSchema } from "@/core/clients/schemas.js";
+
+// ============================================================================
+// API Error Response Parsing
+// ============================================================================
+
+/**
+ * Extracts a human-readable error message from an API error response body.
+ * Uses Zod schema to safely parse the response and extract message/detail.
+ *
+ * @param errorBody - The raw error response body (unknown type)
+ * @returns A formatted error message string
+ */
+export function formatApiError(errorBody: unknown): string {
+  const result = ApiErrorResponseSchema.safeParse(errorBody);
+
+  if (result.success) {
+    const { message, detail } = result.data;
+    // Prefer message, fall back to detail
+    const content = message ?? detail;
+    if (typeof content === "string") {
+      return content;
+    }
+    if (content !== undefined) {
+      return JSON.stringify(content, null, 2);
+    }
+  }
+
+  // Fallback for non-standard error responses
+  if (typeof errorBody === "string") {
+    return errorBody;
+  }
+
+  return JSON.stringify(errorBody, null, 2);
+}
 
 // ============================================================================
 // Types
@@ -192,6 +228,44 @@ export class ApiError extends SystemError {
     const hints = options?.hints ?? ApiError.getDefaultHints(options?.statusCode);
     super(message, { hints, cause: options?.cause });
     this.statusCode = options?.statusCode;
+  }
+
+  /**
+   * Creates an ApiError from a caught error (typically HTTPError from ky).
+   * Extracts status code and formats the error message from the response body.
+   *
+   * @param error - The caught error (HTTPError, Error, or unknown)
+   * @param context - Description of what operation failed (e.g., "syncing agents")
+   * @returns ApiError with formatted message and status code (if available)
+   *
+   * @example
+   * try {
+   *   const response = await appClient.get("endpoint");
+   * } catch (error) {
+   *   throw await ApiError.fromHttpError(error, "fetching data");
+   * }
+   */
+  static async fromHttpError(error: unknown, context: string): Promise<ApiError> {
+    if (error instanceof HTTPError) {
+      let message: string;
+      try {
+        const body: unknown = await error.response.clone().json();
+        message = formatApiError(body);
+      } catch {
+        message = error.message;
+      }
+
+      return new ApiError(`Error ${context}: ${message}`, {
+        statusCode: error.response.status,
+        cause: error,
+      });
+    }
+
+    if (error instanceof Error) {
+      return new ApiError(`Error ${context}: ${error.message}`, { cause: error });
+    }
+
+    return new ApiError(`Error ${context}: ${String(error)}`);
   }
 
   private static getDefaultHints(statusCode?: number): ErrorHint[] {

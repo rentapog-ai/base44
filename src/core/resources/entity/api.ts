@@ -1,4 +1,5 @@
-import { getAppClient, formatApiError } from "@/core/clients/index.js";
+import { HTTPError } from "ky";
+import { getAppClient } from "@/core/clients/index.js";
 import { SyncEntitiesResponseSchema } from "@/core/resources/entity/schema.js";
 import type { SyncEntitiesResponse, Entity } from "@/core/resources/entity/schema.js";
 import { ApiError, SchemaValidationError } from "@/core/errors.js";
@@ -11,25 +12,23 @@ export async function syncEntities(
     entities.map((entity) => [entity.name, entity])
   );
 
-  const response = await appClient.put("entity-schemas", {
-    json: {
-      entityNameToSchema: schemaSyncPayload,
-    },
-    throwHttpErrors: false,
-  });
-
-  if (!response.ok) {
-    const errorJson: unknown = await response.json();
-    if (response.status === 428) {
-      throw new ApiError(`Failed to delete entity: ${formatApiError(errorJson)}`, {
-        statusCode: response.status,
-      });
+  let response;
+  try {
+    response = await appClient.put("entity-schemas", {
+      json: {
+        entityNameToSchema: schemaSyncPayload,
+      },
+    });
+  } catch (error) {
+    // Handle 428 status code specifically (entity has records, can't delete)
+    if (error instanceof HTTPError && error.response.status === 428) {
+      throw new ApiError(
+        `Cannot delete entity that has existing records`,
+        { statusCode: 428, cause: error }
+      );
     }
 
-    throw new ApiError(
-      `Error occurred while syncing entities: ${formatApiError(errorJson)}`,
-      { statusCode: response.status }
-    );
+    throw await ApiError.fromHttpError(error, "syncing entities");
   }
 
   const result = SyncEntitiesResponseSchema.safeParse(await response.json());
