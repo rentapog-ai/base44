@@ -2,6 +2,7 @@ import { intro, log, outro } from "@clack/prompts";
 import type { CLIContext } from "@/cli/types.js";
 import { isLoggedIn } from "@/core/auth/index.js";
 import { initAppConfig } from "@/core/project/index.js";
+import { isCLIError } from "@/core/errors.js";
 import { login } from "@/cli/commands/auth/login-flow.js";
 import { printBanner } from "@/cli/utils/banner.js";
 import { theme } from "@/cli/utils/theme.js";
@@ -92,8 +93,28 @@ export async function runCommand(
     const { outroMessage } = await commandFn();
     outro(outroMessage || "");
   } catch (error) {
-    // Display error with nice formatting, then re-throw for runCLI to handle
-    log.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
+    // Display error message
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log.error(errorMessage);
+
+    // Show stack trace if DEBUG mode
+    if (process.env.DEBUG === "1" && error instanceof Error && error.stack) {
+      log.error(theme.styles.dim(error.stack));
+    }
+
+    // Display hints if this is a CLIError with hints
+    if (isCLIError(error)) {
+      const hints = theme.format.agentHints(error.hints);
+      if (hints) {
+        log.error(hints);
+      }
+    }
+
+    // Get error context and display in outro
+    const errorContext = context.errorReporter.getErrorContext();
+    outro(theme.format.errorContext(errorContext));
+
+    // Re-throw for runCLI to handle (error reporting, exit code)
     throw error;
   }
 }

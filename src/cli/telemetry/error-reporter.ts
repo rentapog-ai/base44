@@ -2,13 +2,14 @@ import { release, type } from "node:os";
 import { nanoid } from "nanoid";
 import { determineAgent } from "@vercel/detect-agent";
 import { getPostHogClient, isTelemetryEnabled } from "./posthog.js";
-import { isCLIError, isUserError } from "@/core/errors.js";
+import { isUserError, isCLIError } from "@/core/errors.js";
 import packageJson from "../../../package.json";
 
 /**
  * Context that can be set during CLI execution.
  */
 export interface ErrorContext {
+  sessionId?: string;
   user?: {
     email: string;
     name?: string;
@@ -46,6 +47,13 @@ export class ErrorReporter {
       .catch(() => {
         // Agent detection is optional
       });
+  }
+
+  /**
+   * Get the session ID for this CLI execution.
+   */
+  getSessionId(): string {
+    return this.sessionId;
   }
 
   /**
@@ -108,6 +116,17 @@ export class ErrorReporter {
       // Agent
       is_agent: this.agentInfo?.isAgent,
       agent_name: this.agentInfo?.name,
+    };
+  }
+
+  /**
+   * Get error context for display purposes.
+   * Returns session ID and current error context.
+   */
+  getErrorContext(): ErrorContext {
+    return {
+      sessionId: this.sessionId,
+      ...this.context,
     };
   }
 

@@ -251,6 +251,11 @@ theme.colors.links(url)                   // URLs and links
 // Styles  
 theme.styles.bold(email)                  // Bold emphasis
 theme.styles.header("Label")              // Dim text for labels
+theme.styles.dim(text)                    // Dimmed text
+
+// Formatters (for error display)
+theme.format.errorContext(ctx)            // Formats ErrorContext as dimmed pipe-separated string
+theme.format.agentHints(hints)            // Formats ErrorHint[] as "[Agent Hints]\n  Run: ..."
 ```
 
 When adding new theme properties, use semantic names (e.g., `links`, `header`) not color names.
@@ -511,6 +516,14 @@ if (!result.success) {
 
 **Important**: Do NOT manually call `z.prettifyError()` - the class does this internally.
 
+### Error Display
+
+When an error is thrown, the CLI displays:
+
+1. **Error message** - The main error text via `log.error()` (stack trace only with `DEBUG=1` env var)
+2. **Agent Hints** (if hints exist) - Actionable suggestions for fixing the issue
+3. **Error Context** - Dimmed outro line with session ID, app ID (if available), and timestamp
+
 ### Error Code Reference
 
 | Code               | Class                   | When to use                           |
@@ -618,6 +631,14 @@ npm test           # vitest
 npm run lint       # eslint
 ```
 
+### Debugging
+
+To show full error stack traces, set the `DEBUG` environment variable:
+
+```bash
+DEBUG=1 base44 deploy    # Shows full stack trace on errors
+```
+
 ### Entry Points Architecture
 
 The CLI uses a split architecture for better development experience:
@@ -642,10 +663,11 @@ The CLI uses a split architecture for better development experience:
 **Error Handling Flow**:
 1. `runCLI()` creates `ErrorReporter` and registers process error handlers
 2. `createProgram(context)` builds the command tree with injected context
-3. Commands throw errors → `runCommand()` catches, logs with `log.error()`, re-throws
-4. `runCLI()` catches errors, reports to PostHog (if not CLIExitError)
+3. Commands throw errors → `runCommand()` catches, logs with `log.error()`, displays hints, re-throws
+4. `runCLI()` catches errors, displays error details, reports to PostHog (if not CLIExitError)
 5. Uses `process.exitCode = 1` (not `process.exit()`) to let event loop drain for telemetry
 6. Telemetry can be disabled via `BASE44_DISABLE_TELEMETRY=1` environment variable
+7. Telemetry includes `error_code` and `is_user_error` properties for all errors
 
 ### Node.js Version
 

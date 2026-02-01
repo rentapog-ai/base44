@@ -32,9 +32,8 @@ async function runCLI(): Promise<void> {
   } catch (error) {
     // CLIExitError = controlled exit (e.g., user cancellation), don't report
     if (!(error instanceof CLIExitError)) {
-      errorReporter.captureException(
-        error instanceof Error ? error : new Error(String(error))
-      );
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      errorReporter.captureException(errorObj);
     }
 
     // Use exitCode instead of exit() to let event loop drain
