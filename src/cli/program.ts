@@ -7,10 +7,10 @@ import { getEntitiesPushCommand } from "@/cli/commands/entities/push.js";
 import { getAgentsCommand } from "@/cli/commands/agents/index.js";
 import { getFunctionsDeployCommand } from "@/cli/commands/functions/deploy.js";
 import { getCreateCommand } from "@/cli/commands/project/create.js";
-import { getDashboardCommand } from "@/cli/commands/project/dashboard.js";
+import { getDashboardCommand } from "@/cli/commands/dashboard/index.js";
 import { getDeployCommand } from "@/cli/commands/project/deploy.js";
 import { getLinkCommand } from "@/cli/commands/project/link.js";
-import { getSiteDeployCommand } from "@/cli/commands/site/deploy.js";
+import { getSiteCommand } from "@/cli/commands/site/index.js";
 import packageJson from "../../package.json";
 
 export function createProgram(context: CLIContext): Command {
@@ -48,7 +48,7 @@ export function createProgram(context: CLIContext): Command {
   program.addCommand(getFunctionsDeployCommand(context));
 
   // Register site commands
-  program.addCommand(getSiteDeployCommand(context));
+  program.addCommand(getSiteCommand(context));
 
   return program;
 }
