@@ -2,8 +2,8 @@ import { Command } from "commander";
 import open from "open";
 import type { CLIContext } from "@/cli/types.js";
 import { runCommand } from "@/cli/utils/index.js";
-import { getSiteUrl } from "@/core/site/index.js";
 import type { RunCommandResult } from "@/cli/utils/runCommand.js";
+import { getSiteUrl } from "@/core/site/index.js";
 
 async function openAction(): Promise<RunCommandResult> {
   const siteUrl = await getSiteUrl();

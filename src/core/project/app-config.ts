@@ -1,15 +1,15 @@
 import { globby } from "globby";
 import { getAppConfigPath } from "@/core/config.js";
-import { writeFile, readJsonFile } from "@/core/utils/fs.js";
 import { APP_CONFIG_PATTERN } from "@/core/consts.js";
-import { AppConfigSchema } from "@/core/project/schema.js";
-import type { AppConfig } from "@/core/project/schema.js";
-import { findProjectRoot } from "@/core/project/config.js";
 import {
-  ConfigNotFoundError,
   ConfigInvalidError,
+  ConfigNotFoundError,
   SchemaValidationError,
 } from "@/core/errors.js";
+import { findProjectRoot } from "@/core/project/config.js";
+import type { AppConfig } from "@/core/project/schema.js";
+import { AppConfigSchema } from "@/core/project/schema.js";
+import { readJsonFile, writeFile } from "@/core/utils/fs.js";
 
 export interface CachedAppConfig {
   id: string;
@@ -31,7 +31,10 @@ function loadFromTestOverrides(): boolean {
   try {
     const data = JSON.parse(overrides);
     if (data.appConfig?.id && data.appConfig?.projectRoot) {
-      cache = { id: data.appConfig.id, projectRoot: data.appConfig.projectRoot };
+      cache = {
+        id: data.appConfig.id,
+        projectRoot: data.appConfig.projectRoot,
+      };
       return true;
     }
   } catch {
@@ -72,7 +75,10 @@ export async function initAppConfig(): Promise<CachedAppConfig> {
       appConfigPath,
       {
         hints: [
-          { message: "Run 'base44 link' to link this project to a Base44 app", command: "base44 link" },
+          {
+            message: "Run 'base44 link' to link this project to a Base44 app",
+            command: "base44 link",
+          },
         ],
       }
     );
@@ -134,9 +140,7 @@ export async function appConfigExists(projectRoot: string): Promise<boolean> {
   return configPath !== null;
 }
 
-async function readAppConfig(
-  projectRoot: string
-): Promise<AppConfig | null> {
+async function readAppConfig(projectRoot: string): Promise<AppConfig | null> {
   const configPath = await findAppConfigPath(projectRoot);
 
   if (!configPath) {
@@ -147,7 +151,11 @@ async function readAppConfig(
   const result = AppConfigSchema.safeParse(parsed);
 
   if (!result.success) {
-    throw new SchemaValidationError("Invalid app configuration", result.error, configPath);
+    throw new SchemaValidationError(
+      "Invalid app configuration",
+      result.error,
+      configPath
+    );
   }
 
   return result.data;

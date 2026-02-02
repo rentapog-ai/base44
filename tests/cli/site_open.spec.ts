@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { setupCLITests, fixture } from "./testkit/index.js";
+import { fixture, setupCLITests } from "./testkit/index.js";
 
 describe("site open command", () => {
   const t = setupCLITests();
