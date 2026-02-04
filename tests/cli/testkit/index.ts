@@ -35,6 +35,8 @@ export interface TestContext {
     user?: { email: string; name: string }
   ) => Promise<void>;
 
+  givenLatestVersion: (version: string | null) => void;
+
   // ─── WHEN METHODS ──────────────────────────────────────────
 
   /** Execute CLI command */
@@ -119,6 +121,7 @@ export function setupCLITests(): TestContext {
       await getKit().givenLoggedIn(user);
       await getKit().givenProject(fixturePath);
     },
+    givenLatestVersion: (version) => getKit().givenLatestVersion(version),
 
     // When methods
     run: (...args) => getKit().run(...args),
