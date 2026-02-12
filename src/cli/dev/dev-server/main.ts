@@ -17,7 +17,7 @@ interface DevServerResult {
 }
 
 export async function createDevServer(
-  options: DevServerOptions = {}
+  options: DevServerOptions = {},
 ): Promise<DevServerResult> {
   const port = options.port ?? (await getPort({ port: DEFAULT_PORT }));
 
@@ -32,7 +32,7 @@ export async function createDevServer(
     cors({
       origin: /^http:\/\/localhost(:\d+)?$/,
       credentials: true,
-    })
+    }),
   );
 
   // Redirect OAuth routes to base44.app directly — proxying breaks the
@@ -56,8 +56,8 @@ export async function createDevServer(
         if ("code" in err && err.code === "EADDRINUSE") {
           reject(
             new Error(
-              `Port ${port} is already in use. Stop the other process and try again.`
-            )
+              `Port ${port} is already in use. Stop the other process and try again.`,
+            ),
           );
         } else {
           reject(err);

@@ -25,7 +25,7 @@ export function getDevCommand(context: CLIContext): Command {
       await runCommand(
         () => devAction(options),
         { requireAuth: true },
-        context
+        context,
       );
     });
 }
