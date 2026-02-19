@@ -53,18 +53,20 @@ jobs:
         run: |
           posthog-cli exp query run "SELECT properties.\$exception_fingerprint as fingerprint, count() as occurrences, any(properties.\$exception_types) as exception_type, any(properties.\$exception_values) as exception_message, substring(toString(any(properties.\$exception_list)), 1, 1500) as exception_list, any(properties.\$exception_level) as level, any(properties.error_code) as error_code, any(properties.is_user_error) as is_user_error, any(properties.command_name) as command_name, any(properties.cli_version) as cli_version, any(properties.node_version) as node_version, any(properties.platform) as platform, any(properties.arch) as arch, any(properties.os_type) as os_type, any(properties.is_agent) as is_agent, any(properties.agent_name) as agent_name, any(properties.api_status_code) as api_status_code, any(properties.api_request_url) as api_request_url, any(properties.api_request_method) as api_request_method, max(timestamp) as last_seen, min(timestamp) as first_seen FROM events WHERE event = '\$exception' AND timestamp >= now() - INTERVAL ${{ steps.time-range.outputs.hours }} HOUR GROUP BY fingerprint ORDER BY occurrences DESC LIMIT 25" > /tmp/details.jsonl || true
 
-      - name: Trim output files
+      - name: Prepare data files
         run: |
           for f in /tmp/summary.jsonl /tmp/details.jsonl; do
             if [ -f "$f" ] && [ "$(wc -c < "$f")" -gt 200000 ]; then
               awk 'BEGIN{t=0}{t+=length($0)+1; if(t>200000) exit; print}' "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
             fi
           done
+          cp /tmp/summary.jsonl ./summary.jsonl 2>/dev/null || touch ./summary.jsonl
+          cp /tmp/details.jsonl ./details.jsonl 2>/dev/null || touch ./details.jsonl
 
       - name: Check for errors
         id: check-errors
         run: |
-          if [ -s /tmp/summary.jsonl ]; then
+          if [ -s ./summary.jsonl ]; then
             echo "has_errors=true" >> $GITHUB_OUTPUT
           else
             echo "has_errors=false" >> $GITHUB_OUTPUT
@@ -86,16 +88,16 @@ jobs:
 
             ## Step 1: Read the error data
 
-            IMPORTANT: Use `cat /tmp/summary.jsonl` and `cat /tmp/details.jsonl` (Bash tool) to read the data files — do NOT use the Read tool, as it may hit token limits on large files.
+            The data files are in the workspace root. Use `cat summary.jsonl` and `cat details.jsonl` (Bash tool) to read them — do NOT use the Read tool, as it may hit token limits on large files.
 
             Both files are JSONL (one JSON array per line):
 
-            **`/tmp/summary.jsonl`** — aggregated error counts. Columns (by position):
+            **`summary.jsonl`** — aggregated error counts. Columns (by position):
             `[is_user_error, error_code, occurrences, users_affected, internal_occurrences, sample_message, sample_command]`
             - `users_affected` = unique users (count of distinct users, no PII)
             - `internal_occurrences` = how many occurrences came from internal users (@wix.com / @base44.com)
 
-            **`/tmp/details.jsonl`** — one representative event per unique error group (grouped by fingerprint, ordered by occurrences DESC). Columns (by position):
+            **`details.jsonl`** — one representative event per unique error group (grouped by fingerprint, ordered by occurrences DESC). Columns (by position):
             `[fingerprint, occurrences, exception_type, exception_message, exception_list, level, error_code, is_user_error, command_name, cli_version, node_version, platform, arch, os_type, is_agent, agent_name, api_status_code, api_request_url, api_request_method, last_seen, first_seen]`
 
             You MUST read ALL rows from both files. Every error group in the data must be analyzed.
@@ -243,7 +245,7 @@ jobs:
             - Don't speculate — if you can't find the root cause in the code, say so.
             - When an existing issue already tracks the error, reference it with `#<number>` instead of re-explaining everything. Just note if occurrences have increased or new users are affected.
             - Recurring untracked errors should be flagged prominently — these are being ignored.
-          claude_args: '--model claude-sonnet-4-20250514 --allowed-tools Read Write Glob Grep "Bash(cat /tmp/*)" "Bash(gh issue create:*)" "Bash(gh issue list:*)" "Bash(gh issue view:*)" "Bash(gh label create:*)"'
+          claude_args: '--model claude-sonnet-4-20250514 --allowed-tools Read Write Glob Grep "Bash(cat:*)" "Bash(gh issue create:*)" "Bash(gh issue list:*)" "Bash(gh issue view:*)" "Bash(gh label create:*)"'
 
       - name: No errors summary
         if: steps.check-errors.outputs.has_errors != 'true'
