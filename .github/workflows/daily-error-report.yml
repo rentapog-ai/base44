@@ -51,7 +51,7 @@ jobs:
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_API_KEY }}
           POSTHOG_CLI_ENV_ID: ${{ vars.POSTHOG_PROJECT_ID }}
         run: |
-          posthog-cli exp query run "SELECT properties.\$exception_fingerprint as fingerprint, count() as occurrences, any(properties.\$exception_types) as exception_type, any(properties.\$exception_values) as exception_message, substring(toString(any(properties.\$exception_list)), 1, 1500) as exception_list, any(properties.\$exception_level) as level, any(properties.error_code) as error_code, any(properties.is_user_error) as is_user_error, any(properties.command_name) as command_name, any(properties.cli_version) as cli_version, any(properties.node_version) as node_version, any(properties.platform) as platform, any(properties.arch) as arch, any(properties.os_type) as os_type, any(properties.is_agent) as is_agent, any(properties.agent_name) as agent_name, any(properties.api_status_code) as api_status_code, any(properties.api_request_url) as api_request_url, any(properties.api_request_method) as api_request_method, max(timestamp) as last_seen, min(timestamp) as first_seen FROM events WHERE event = '\$exception' AND timestamp >= now() - INTERVAL ${{ steps.time-range.outputs.hours }} HOUR GROUP BY fingerprint ORDER BY occurrences DESC LIMIT 25" > /tmp/details.jsonl || true
+          posthog-cli exp query run "SELECT properties.\$exception_fingerprint as fingerprint, any(properties.\$exception_issue_id) as issue_id, count() as occurrences, any(properties.\$exception_types) as exception_type, any(properties.\$exception_values) as exception_message, substring(toString(any(properties.\$exception_list)), 1, 1500) as exception_list, any(properties.\$exception_level) as level, any(properties.error_code) as error_code, any(properties.is_user_error) as is_user_error, any(properties.command_name) as command_name, any(properties.cli_version) as cli_version, any(properties.node_version) as node_version, any(properties.platform) as platform, any(properties.arch) as arch, any(properties.os_type) as os_type, any(properties.is_agent) as is_agent, any(properties.agent_name) as agent_name, any(properties.api_status_code) as api_status_code, any(properties.api_request_url) as api_request_url, any(properties.api_request_method) as api_request_method, max(timestamp) as last_seen, min(timestamp) as first_seen FROM events WHERE event = '\$exception' AND timestamp >= now() - INTERVAL ${{ steps.time-range.outputs.hours }} HOUR GROUP BY fingerprint ORDER BY occurrences DESC LIMIT 25" > /tmp/details.jsonl || true
 
       - name: Prepare data files
         run: |
@@ -84,7 +84,8 @@ jobs:
             ## Context
 
             PostHog project ID: `${{ vars.POSTHOG_PROJECT_ID }}`
-            PostHog error tracking URL pattern: `https://us.posthog.com/project/${{ vars.POSTHOG_PROJECT_ID }}/error_tracking/<fingerprint>`
+            PostHog error tracking URL pattern: `https://us.posthog.com/project/${{ vars.POSTHOG_PROJECT_ID }}/error_tracking/<issue_id>`
+            (use the `issue_id` field from details.jsonl, NOT the fingerprint — issue_id is a UUID that PostHog uses in its UI)
 
             ## Step 1: Read the error data
 
@@ -98,7 +99,8 @@ jobs:
             - `internal_occurrences` = how many occurrences came from internal users (@wix.com / @base44.com)
 
             **`details.jsonl`** — one representative event per unique error group (grouped by fingerprint, ordered by occurrences DESC). Columns (by position):
-            `[fingerprint, occurrences, exception_type, exception_message, exception_list, level, error_code, is_user_error, command_name, cli_version, node_version, platform, arch, os_type, is_agent, agent_name, api_status_code, api_request_url, api_request_method, last_seen, first_seen]`
+            `[fingerprint, issue_id, occurrences, exception_type, exception_message, exception_list, level, error_code, is_user_error, command_name, cli_version, node_version, platform, arch, os_type, is_agent, agent_name, api_status_code, api_request_url, api_request_method, last_seen, first_seen]`
+            - `issue_id` is the PostHog error tracking UUID — use it for PostHog links, not the fingerprint
 
             You MUST read ALL rows from both files. Every error group in the data must be analyzed.
 
@@ -127,7 +129,7 @@ jobs:
             1. Read the stack trace from `exception_list` (it's a JSON array of `{type, value, stacktrace: {frames: [{filename, lineno, colno, function}]}}`)
                Note: `exception_list` is truncated to ~1500 chars — this should include the most relevant top frames.
             2. **Include the error message and stack trace from PostHog** in the report. Show `exception_message` and the top 3-5 frames from `exception_list`. These are the actual errors users hit.
-            3. **Build a PostHog link** for each error using the `fingerprint` field: `https://us.posthog.com/project/${{ vars.POSTHOG_PROJECT_ID }}/error_tracking/<fingerprint>`. Include this link in the report so readers can drill into PostHog for full details.
+            3. **Build a PostHog link** for each error using the `issue_id` field (NOT fingerprint): `https://us.posthog.com/project/${{ vars.POSTHOG_PROJECT_ID }}/error_tracking/<issue_id>`. Include this link in the report so readers can drill into PostHog for full details. If `issue_id` is null/empty, omit the link.
             4. Use the stack trace frames to find the relevant source files in this repository (under `src/`). Map the frame `filename` and `lineno` to actual source files using Grep/Glob.
             5. **Read those source files** and understand WHY the error happened. This is critical — you MUST read the actual source code, not guess.
             6. **Include code snippets** in the report for every error. Show the exact lines from `src/` that caused or are related to the error. Use the `// src/path/to/file.ts:NN` format.
@@ -135,13 +137,18 @@ jobs:
 
             Each error in the report must have BOTH: (a) the error/stack trace from PostHog data, and (b) the relevant source code from the repo.
 
-            ## Step 4: Classify and filter
+            ## Step 4: Classify every error
 
-            - **System errors** (`is_user_error = false`): These are bugs. Always include them.
-            - **User errors** (`is_user_error = true`): These are expected (auth expired, invalid input, etc). Only include a user error if:
-              - It affects many different users (>= 5 from `users_affected`), suggesting a CLI problem rather than individual user mistakes
-              - OR it looks like a CLI bug disguised as a user error
-            - **Internal vs external**: Use `internal_occurrences` from the summary to note what fraction of errors come from internal users.
+            For EVERY error group, assign one of these verdicts:
+            - **CLI bug** — something in the CLI code is broken and needs a fix
+            - **Backend issue** — the CLI correctly reports a server-side problem (not a CLI fix)
+            - **Working as designed** — user error, the CLI correctly validates and throws (e.g. wrong directory, invalid schema). Only flag if volume is unusually high suggesting a UX gap.
+            - **Needs investigation** — can't determine root cause from available data
+
+            Also classify:
+            - `is_user_error = false` → likely CLI bug or backend issue
+            - `is_user_error = true` → likely working as designed, unless it affects >= 5 users AND looks like a CLI problem
+            - Use `internal_occurrences` from the summary to note what fraction of errors come from internal users
 
             ## Step 5: Create the GitHub issue
 
@@ -158,93 +165,109 @@ jobs:
             ```
             ## Summary
 
-            Brief 2-3 sentence overview of the error landscape. Mention total errors, how many are system vs user, and the most critical finding.
-
-            ## Key Metrics
+            Brief 2-3 sentence overview. Lead with the most actionable finding.
 
             | Metric | Value |
             | --- | --- |
             | Time range | last <hours> hours |
             | Total errors | N |
-            | System errors | N |
-            | User errors (noteworthy) | N |
+            | CLI bugs | N |
+            | Backend issues | N |
+            | User errors (working as designed) | N |
             | Unique users affected | N |
             | Internal user occurrences | N |
 
-            ## Recurring Errors
+            ## Errors requiring action
 
-            If any errors appeared in previous daily reports, list them here:
+            For each error that is a CLI bug or needs investigation (ordered by impact):
 
-            | Error | Days recurring | Existing issue | Status |
-            | --- | --- | --- | --- |
-            | Short description | N days | #123 or "none" | open/assigned/untracked |
+            ### <N>. <Short title> — <verdict: CLI bug / needs investigation>
 
-            Recurring errors that are not yet tracked in an issue should be called out explicitly.
+            | | |
+            | --- | --- |
+            | Error code | `CODE` |
+            | Occurrences | N (N internal) |
+            | Users affected | N |
+            | Command | `name` |
+            | Platforms | list |
+            | PostHog | [View in error tracking](https://us.posthog.com/project/<PROJECT_ID>/error_tracking/<issue_id>) |
+            | Existing issue | #123 or None |
+            | Recurring | Yes (N days) / No |
 
-            ## Critical Issues
-
-            For each significant error group (ordered by severity/impact):
-
-            ### Issue N: <Short descriptive title>
-
-            **Error code**: `CODE` | **Occurrences**: N | **Users affected**: N
-            **Command**: `command name` | **Type**: System/User
-            **Recurring**: Yes (N days) / No | **Existing issue**: #123 or None
-            **PostHog**: [View in error tracking](https://us.posthog.com/project/<PROJECT_ID>/error_tracking/<fingerprint>)
-
-            **Error from PostHog**:
-            ```
-            ErrorType: error message from exception_message
-            ```
-
-            **Stack trace** (from PostHog, abbreviated — redact PII from paths):
+            **Error**: (from PostHog — the actual error message users see)
             ```
             ErrorType: message
-                at function (file:line:col)
-                at function (file:line:col)
-                ...
             ```
 
-            **What happened**:
-            One paragraph explaining the error in plain English.
+            **Stack trace**: (only show frames from `src/` — skip generic entry points like `runCLI`, `parseAsync`)
+            ```
+            at specificFunction (src/path/to/file.ts:NN:NN)
+            at callerFunction (src/path/to/other.ts:NN:NN)
+            ```
 
-            **Root cause in code**:
-            Explain what you found in the source code. Include the relevant code snippet:
+            **Root cause**: (what you found in the code — include a code snippet)
             ```typescript
             // src/path/to/file.ts:NN
-            <relevant code>
+            <the relevant code>
             ```
 
-            **Additional context**:
-            - CLI versions: list
-            - Platforms: list
-            - Internal vs external: N of M occurrences from internal users
+            If you cannot find the root cause, say "Root cause not found in CLI code — may be a backend/infrastructure issue" rather than showing irrelevant code (like the generic error handler).
 
-            **Expected behavior**: What should have happened
-            **Actual behavior**: What actually happened
+            **Suggested fix**: One concrete sentence — what to change, in which file, and how.
 
             ---
 
-            ## Suggestions
+            ## Backend issues (not CLI fixes)
 
-            Numbered list of actionable next steps, ordered by priority. For each:
-            1. What to fix and where (file path + line)
-            2. Suggested approach (brief)
-            3. Severity: critical / high / medium / low
+            Brief table of errors caused by the backend/server, not the CLI:
+
+            | Error | Occurrences | Users | Command | PostHog |
+            | --- | --- | --- | --- | --- |
+            | Short description | N | N | `cmd` | [link](url) |
+
+            These are not CLI bugs but may need backend team attention.
+
+            ## User errors (working as designed)
+
+            Brief table of expected user errors where the CLI validation is correct:
+
+            | Error | Occurrences | Users | Command | PostHog |
+            | --- | --- | --- | --- | --- |
+            | Short description | N | N | `cmd` | [link](url) |
+
+            If any user error has unusually high volume, add a note about potential UX improvements.
+
+            ## Recurring errors
+
+            If any errors appeared in previous daily reports:
+
+            | Error | Days recurring | Existing issue | Tracked? |
+            | --- | --- | --- | --- |
+            | Short description | N days | #123 or none | yes/no |
+
+            Untracked recurring errors should be called out.
+
+            ## Action items
+
+            Numbered list of concrete next steps, most important first:
+            1. **[critical/high/medium]** `src/path/to/file.ts:NN` — what to change and why
             ```
 
             If there are zero errors worth reporting, do NOT create an issue. Instead just print "No significant errors to report."
 
             ## Rules
 
-            - Be concise. Don't pad the report.
-            - ALWAYS include code snippets from the repo for every error. Read the source files using the stack trace frames, then paste the relevant lines in fenced code blocks with `// src/path:line` comments. This is mandatory — a report without code snippets is incomplete.
-            - For stack traces, show the most relevant 3-5 frames, not the full trace.
-            - Group duplicate/similar errors together. Don't repeat the same error N times.
+            - **Be concise.** Don't pad. An engineer should scan this in 2 minutes and know what to do.
+            - **Every error in the data must appear** in the report — either in "Errors requiring action", "Backend issues", or "User errors". Don't silently drop error groups.
+            - **Code snippets are mandatory** for errors in "Errors requiring action". Show the actual code that threw or is relevant, not the generic error handler.
+            - **Stack traces: skip boilerplate frames.** `runCLI`, `Command.parseAsync`, `Command._parseCommand` are entry-point noise. Only show frames from `src/` that point to the actual error origin.
+            - **Don't show irrelevant code.** If the only code you can find is the generic catch block in `index.ts`, say "root cause not found" — don't pretend it's the root cause.
+            - **Suggestions must be concrete.** "Investigate X" is not actionable. "In `src/path/file.ts:42`, add a timeout parameter to the fetch call" is.
+            - **No "Expected/Actual behavior" sections** — they just repeat "What happened". Keep it tight.
+            - **PostHog links use `issue_id`** (UUID), not fingerprint. If issue_id is null, omit the link.
             - Add the label "error-report" to the issue.
-            - Don't speculate — if you can't find the root cause in the code, say so.
-            - When an existing issue already tracks the error, reference it with `#<number>` instead of re-explaining everything. Just note if occurrences have increased or new users are affected.
-            - Recurring untracked errors should be flagged prominently — these are being ignored.
+            - When an existing issue already tracks the error, reference it with `#<number>` instead of re-explaining.
+            - Recurring untracked errors should be flagged prominently.
           claude_args: '--model claude-sonnet-4-20250514 --allowed-tools Read Write Glob Grep "Bash(cat:*)" "Bash(gh issue create:*)" "Bash(gh issue list:*)" "Bash(gh issue view:*)" "Bash(gh label create:*)"'
 
       - name: No errors summary
