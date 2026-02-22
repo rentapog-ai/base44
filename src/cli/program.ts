@@ -66,7 +66,7 @@ export function createProgram(context: CLIContext): Command {
   program.addCommand(getDevCommand(context), { hidden: true });
 
   // Register logs command
-  program.addCommand(getLogsCommand(context));
+  program.addCommand(getLogsCommand(context), { hidden: true });
 
   return program;
 }
