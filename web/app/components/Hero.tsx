@@ -62,24 +62,24 @@ export default function Hero({ onBuild, loading }: HeroProps) {
 
         {/* Input form with enhanced styling */}
         <div className="bg-white rounded-2xl shadow-2xl p-2 mb-12 backdrop-blur-xl border border-gray-200/50">
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-stretch gap-2">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <input
               type="text"
               placeholder="e.g., Build a task management app with team collaboration features"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
-              className="flex-1 px-6 py-5 outline-none text-lg placeholder:text-gray-400 rounded-xl disabled:opacity-50"
+              className="flex-1 px-6 py-4 outline-none text-base sm:text-lg placeholder:text-gray-400 rounded-xl disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-8 h-16 bg-gradient-accent text-white rounded-xl flex items-center justify-center hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 font-bold text-lg whitespace-nowrap"
+              className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-accent text-white rounded-full flex items-center justify-center hover:shadow-lg hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 font-bold"
             >
               {loading ? (
-                <span className="animate-spin inline-block">⟳</span>
+                <span className="animate-spin text-2xl">⟳</span>
               ) : (
-                "Build"
+                <span className="text-2xl">→</span>
               )}
             </button>
           </form>
