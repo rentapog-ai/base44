@@ -21,41 +21,30 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-lg mb-6">Product</h3>
             <ul className="space-y-4">
-              {["Features", "Pricing", "Templates", "Enterprise"].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-gray-400 hover:text-white transition">
-                    {item}
-                  </a>
-                </li>
-              ))}
+              <li><a href="/features" className="text-gray-400 hover:text-white transition">Features</a></li>
+              <li><a href="/pricing" className="text-gray-400 hover:text-white transition">Pricing</a></li>
+              <li><a href="/templates" className="text-gray-400 hover:text-white transition">Templates</a></li>
+              <li><a href="/enterprise" className="text-gray-400 hover:text-white transition">Enterprise</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-lg mb-6">Company</h3>
             <ul className="space-y-4">
-              {["About", "Blog", "Careers", "Contact"].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-gray-400 hover:text-white transition">
-                    {item}
-                  </a>
-                </li>
-              ))}
+              <li><a href="/about" className="text-gray-400 hover:text-white transition">About</a></li>
+              <li><a href="/blog" className="text-gray-400 hover:text-white transition">Blog</a></li>
+              <li><a href="/careers" className="text-gray-400 hover:text-white transition">Careers</a></li>
+              <li><a href="/contact" className="text-gray-400 hover:text-white transition">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-lg mb-6">Legal</h3>
             <ul className="space-y-4">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy", "Security"].map(
-                (item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition">
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
+              <li><a href="/privacy" className="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+              <li><a href="/terms" className="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+              <li><a href="/cookies" className="text-gray-400 hover:text-white transition">Cookie Policy</a></li>
+              <li><a href="/security" className="text-gray-400 hover:text-white transition">Security</a></li>
             </ul>
           </div>
         </div>
@@ -67,15 +56,9 @@ export default function Footer() {
               &copy; 2024 Base44. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              {["Twitter", "GitHub", "Discord"].map((social) => (
-                <a
-                  key={social}
-                  href="#"
-                  className="text-gray-400 hover:text-white transition text-sm"
-                >
-                  {social}
-                </a>
-              ))}
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm">Twitter</a>
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm">GitHub</a>
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm">Discord</a>
             </div>
           </div>
         </div>
