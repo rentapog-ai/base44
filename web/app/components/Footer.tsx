@@ -21,30 +21,30 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-lg mb-6">Product</h3>
             <ul className="space-y-4">
-              <li><a href="/features" className="text-gray-400 hover:text-white transition">Features</a></li>
-              <li><a href="/pricing" className="text-gray-400 hover:text-white transition">Pricing</a></li>
-              <li><a href="/templates" className="text-gray-400 hover:text-white transition">Templates</a></li>
-              <li><a href="/enterprise" className="text-gray-400 hover:text-white transition">Enterprise</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Features</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Pricing</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Templates</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Enterprise</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-lg mb-6">Company</h3>
             <ul className="space-y-4">
-              <li><a href="/about" className="text-gray-400 hover:text-white transition">About</a></li>
-              <li><a href="/blog" className="text-gray-400 hover:text-white transition">Blog</a></li>
-              <li><a href="/careers" className="text-gray-400 hover:text-white transition">Careers</a></li>
-              <li><a href="/contact" className="text-gray-400 hover:text-white transition">Contact</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">About</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Blog</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Careers</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-lg mb-6">Legal</h3>
             <ul className="space-y-4">
-              <li><a href="/privacy" className="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="/terms" className="text-gray-400 hover:text-white transition">Terms of Service</a></li>
-              <li><a href="/cookies" className="text-gray-400 hover:text-white transition">Cookie Policy</a></li>
-              <li><a href="/security" className="text-gray-400 hover:text-white transition">Security</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Cookie Policy</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition">Security</a></li>
             </ul>
           </div>
         </div>

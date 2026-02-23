@@ -34,13 +34,13 @@ export default function Header() {
 
         <nav className="hidden lg:flex items-center gap-12">
           <a href="/" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Product</a>
-          <a href="/solutions" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Solutions</a>
-          <a href="/pricing" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Pricing</a>
-          <a href="/docs" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Docs</a>
+          <a href="/" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Solutions</a>
+          <a href="/" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Pricing</a>
+          <a href="/" className="text-gray-700 hover:text-gray-900 font-medium transition duration-300">Docs</a>
         </nav>
 
         <div className="flex items-center gap-4">
-          <a href="/signin" className="hidden sm:block text-gray-700 hover:text-gray-900 font-medium transition">Sign In</a>
+          <a href="/" className="hidden sm:block text-gray-700 hover:text-gray-900 font-medium transition">Sign In</a>
           <a href="/" className="btn-primary text-sm whitespace-nowrap inline-block">Get Started</a>
         </div>
       </div>
