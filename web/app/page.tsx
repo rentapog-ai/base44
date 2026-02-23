@@ -30,6 +30,12 @@ export default function Home() {
   };
 
   const handleBuildApp = async (description: string) => {
+    // Navigate to editor page with the description to build there
+    const encodedCmd = encodeURIComponent(description);
+    router.push(`/editor?build=${encodedCmd}`);
+  };
+
+  const handleBuildAppOld = async (description: string) => {
     setLoading(true);
     setShowResult(false);
     setResult(null);

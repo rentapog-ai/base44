@@ -9,20 +9,62 @@ function EditorContent() {
   const [config, setConfig] = useState<string>("");
   const [command, setCommand] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"config" | "preview">("preview");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const configParam = searchParams.get("config");
     const cmdParam = searchParams.get("cmd");
+    const buildParam = searchParams.get("build");
 
     if (configParam) {
+      // Loading from existing config
       try {
         setConfig(decodeURIComponent(configParam));
         setCommand(decodeURIComponent(cmdParam || ""));
       } catch (e) {
         console.error("Failed to decode config:", e);
       }
+    } else if (buildParam) {
+      // Need to build - trigger the build
+      const description = decodeURIComponent(buildParam);
+      setCommand(description);
+      handleBuild(description);
     }
   }, [searchParams]);
+
+  const handleBuild = async (description: string) => {
+    setLoading(true);
+    setError("");
+    setConfig("");
+
+    try {
+      const cliUrl = process.env.NEXT_PUBLIC_CLI_API_URL || "http://localhost:3000";
+      const response = await fetch(`${cliUrl}/api/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command: description }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(`Server error (${response.status}): ${errorData.error || "Unknown error"}`);
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setConfig(data.output);
+      } else {
+        setError(data.error || "Build failed");
+      }
+    } catch (err) {
+      setError(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCopyConfig = () => {
     if (config) {
@@ -81,7 +123,33 @@ function EditorContent() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!config ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="text-center space-y-6">
+              <div className="inline-block">
+                <div className="w-16 h-16 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+              </div>
+              <div>
+                <p className="text-slate-600 text-lg font-medium">Building your app...</p>
+                <p className="text-slate-500 text-sm mt-2">Creating {command}</p>
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center max-w-md">
+              <div className="text-6xl mb-4">❌</div>
+              <p className="text-slate-900 text-lg font-semibold mb-2">Build Failed</p>
+              <p className="text-slate-600 mb-6">{error}</p>
+              <button
+                onClick={() => router.back()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        ) : !config ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <p className="text-slate-600 text-lg">No configuration loaded</p>
