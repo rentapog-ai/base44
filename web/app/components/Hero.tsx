@@ -74,12 +74,12 @@ export default function Hero({ onBuild, loading }: HeroProps) {
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="sm:mr-1 w-full sm:w-16 h-16 sm:h-auto bg-gradient-accent text-white rounded-xl flex items-center justify-center hover:shadow-lg disabled:opacity-50 transition duration-300 font-semibold"
+              className="px-8 h-16 bg-gradient-accent text-white rounded-xl flex items-center justify-center hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 font-bold text-lg whitespace-nowrap"
             >
               {loading ? (
-                <span className="animate-spin-slow inline-block">⟳</span>
+                <span className="animate-spin inline-block">⟳</span>
               ) : (
-                <span className="hidden sm:inline">Build</span>
+                "Build"
               )}
             </button>
           </form>
