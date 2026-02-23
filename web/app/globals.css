@@ -84,7 +84,8 @@ body {
 }
 
 .btn-primary {
-  @apply px-8 py-4 bg-gradient-accent text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transform transition duration-300;
+  background: linear-gradient(135deg, #ff6b35 0%, #f97316 100%);
+  @apply px-8 py-4 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transform transition duration-300;
 }
 
 .btn-secondary {
