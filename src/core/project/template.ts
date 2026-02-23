@@ -2,11 +2,11 @@ import { dirname, join } from "node:path";
 import ejs from "ejs";
 import frontmatter from "front-matter";
 import { globby } from "globby";
-import { getTemplatesDir, getTemplatesIndexPath } from "@/core/config.js";
-import { SchemaValidationError } from "@/core/errors.js";
-import type { Template } from "@/core/project/schema.js";
-import { TemplatesConfigSchema } from "@/core/project/schema.js";
-import { copyFile, readJsonFile, writeFile } from "@/core/utils/fs.js";
+import { getTemplatesDir, getTemplatesIndexPath } from "../config.js";
+import { SchemaValidationError } from "../errors.js";
+import type { Template } from "./schema.js";
+import { TemplatesConfigSchema } from "./schema.js";
+import { copyFile, readJsonFile, writeFile } from "../utils/fs.js";
 
 interface TemplateData {
   name: string;
@@ -60,7 +60,11 @@ export async function renderTemplate(
       if (file.endsWith(".ejs")) {
         // Render EJS template and write to outputFileName or filename without .ejs extension
         const rendered = await ejs.renderFile(srcPath, data);
-        const { attributes, body } = frontmatter<TemplateFrontmatter>(rendered);
+        const parsed = (frontmatter as any)(rendered) as {
+          attributes: TemplateFrontmatter;
+          body: string;
+        };
+        const { attributes, body } = parsed;
         const destFile = attributes.outputFileName
           ? join(dirname(file), attributes.outputFileName)
           : file.replace(/\.ejs$/, "");

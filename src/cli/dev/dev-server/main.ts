@@ -4,10 +4,10 @@ import cors from "cors";
 import express from "express";
 import getPort from "get-port";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { createDevLogger } from "@/cli/dev/createDevLogger.js";
-import { FunctionManager } from "@/cli/dev/dev-server/function-manager.js";
-import { createFunctionRouter } from "@/cli/dev/dev-server/routes/functions.js";
-import type { BackendFunction } from "@/core/resources/function/schema.js";
+import { createDevLogger } from "../createDevLogger.js";
+import { FunctionManager } from "./function-manager.js";
+import { createFunctionRouter } from "./routes/functions.js";
+import type { BackendFunction } from "../../../core/resources/function/schema.js";
 
 const DEFAULT_PORT = 4400;
 const BASE44_APP_URL = "https://base44.app";

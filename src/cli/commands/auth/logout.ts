@@ -1,8 +1,8 @@
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { deleteAuth } from "@/core/auth/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { deleteAuth } from "../../../core/auth/index.js";
 
 async function logout(): Promise<RunCommandResult> {
   await deleteAuth();

@@ -1,14 +1,14 @@
 import { source, stripIndent } from "common-tags";
 import type { JSONSchema4 } from "json-schema";
 import { compile } from "json-schema-to-typescript";
-import { getTypesOutputPath } from "@/core/config.js";
-import { TypeGenerationError } from "@/core/errors.js";
-import { getAppConfig } from "@/core/project/app-config.js";
-import type { AgentConfig } from "@/core/resources/agent/index.js";
-import type { ConnectorResource } from "@/core/resources/connector/index.js";
-import type { Entity } from "@/core/resources/entity/index.js";
-import type { BackendFunction } from "@/core/resources/function/index.js";
-import { writeFile } from "@/core/utils/fs.js";
+import { getTypesOutputPath } from "../config.js";
+import { TypeGenerationError } from "../errors.js";
+import { getAppConfig } from "../project/app-config.js";
+import type { AgentConfig } from "../resources/agent/index.js";
+import type { ConnectorResource } from "../resources/connector/index.js";
+import type { Entity } from "../resources/entity/index.js";
+import type { BackendFunction } from "../resources/function/index.js";
+import { writeFile } from "../utils/fs.js";
 
 interface GenerateTypesInput {
   entities: Entity[];

@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import open from "open";
-import type { CLIContext } from "@/cli/types.js";
-import { getDashboardUrl, runCommand } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
+import type { CLIContext } from "../../types.js";
+import { getDashboardUrl, runCommand } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
 
 async function openDashboard(
   isNonInteractive: boolean,

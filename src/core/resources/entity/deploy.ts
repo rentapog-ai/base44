@@ -1,8 +1,8 @@
-import { syncEntities } from "@/core/resources/entity/api.js";
+import { syncEntities } from "./api.js";
 import type {
   Entity,
   SyncEntitiesResponse,
-} from "@/core/resources/entity/schema.js";
+} from "./schema.js";
 
 export async function pushEntities(
   entities: Entity[],

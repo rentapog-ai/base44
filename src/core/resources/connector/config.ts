@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { globby } from "globby";
-import { InvalidInputError, SchemaValidationError } from "@/core/errors.js";
+import { InvalidInputError, SchemaValidationError } from "../../errors.js";
 import {
   CONFIG_FILE_EXTENSION,
   CONFIG_FILE_EXTENSION_GLOB,

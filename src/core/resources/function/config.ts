@@ -1,13 +1,13 @@
 import { dirname, join } from "node:path";
 import { globby } from "globby";
-import { FUNCTION_CONFIG_FILE } from "@/core/consts.js";
-import { FileNotFoundError, SchemaValidationError } from "@/core/errors.js";
+import { FUNCTION_CONFIG_FILE } from "../../consts.js";
+import { FileNotFoundError, SchemaValidationError } from "../../errors.js";
 import type {
   BackendFunction,
   FunctionConfig,
-} from "@/core/resources/function/schema.js";
-import { FunctionConfigSchema } from "@/core/resources/function/schema.js";
-import { pathExists, readJsonFile } from "@/core/utils/fs.js";
+} from "./schema.js";
+import { FunctionConfigSchema } from "./schema.js";
+import { pathExists, readJsonFile } from "../../utils/fs.js";
 
 async function readFunctionConfig(configPath: string): Promise<FunctionConfig> {
   const parsed = await readJsonFile(configPath);

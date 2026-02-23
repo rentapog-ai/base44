@@ -1,6 +1,6 @@
 import type { KyResponse } from "ky";
-import { getAppClient } from "@/core/clients/index.js";
-import { ApiError, SchemaValidationError } from "@/core/errors.js";
+import { getAppClient } from "../../clients/index.js";
+import { ApiError, SchemaValidationError } from "../../errors.js";
 import type {
   IntegrationType,
   ListConnectorsResponse,

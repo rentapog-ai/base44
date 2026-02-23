@@ -1,14 +1,14 @@
 import { dirname, join } from "node:path";
 import { globby } from "globby";
-import { PROJECT_CONFIG_PATTERNS, PROJECT_SUBDIR } from "@/core/consts.js";
-import { ConfigNotFoundError, SchemaValidationError } from "@/core/errors.js";
-import { ProjectConfigSchema } from "@/core/project/schema.js";
-import type { ProjectData, ProjectRoot } from "@/core/project/types.js";
-import { agentResource } from "@/core/resources/agent/index.js";
-import { connectorResource } from "@/core/resources/connector/index.js";
-import { entityResource } from "@/core/resources/entity/index.js";
-import { functionResource } from "@/core/resources/function/index.js";
-import { readJsonFile } from "@/core/utils/fs.js";
+import { PROJECT_CONFIG_PATTERNS, PROJECT_SUBDIR } from "../consts.js";
+import { ConfigNotFoundError, SchemaValidationError } from "../errors.js";
+import { ProjectConfigSchema } from "./schema.js";
+import type { ProjectData, ProjectRoot } from "./types.js";
+import { agentResource } from "../resources/agent/index.js";
+import { connectorResource } from "../resources/connector/index.js";
+import { entityResource } from "../resources/entity/index.js";
+import { functionResource } from "../resources/function/index.js";
+import { readJsonFile } from "../utils/fs.js";
 
 async function findConfigInDir(dir: string): Promise<string | null> {
   const files = await globby(PROJECT_CONFIG_PATTERNS, {

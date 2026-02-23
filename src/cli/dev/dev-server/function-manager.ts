@@ -7,9 +7,9 @@ import {
   DependencyNotFoundError,
   InternalError,
   InvalidInputError,
-} from "@/core/errors.js";
-import type { BackendFunction } from "@/core/resources/function/schema.js";
-import type { Logger } from "../createDevLogger";
+} from "../../../core/errors.js";
+import type { BackendFunction } from "../../../core/resources/function/schema.js";
+import type { Logger } from "../createDevLogger.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

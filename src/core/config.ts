@@ -5,11 +5,11 @@ import {
   PROJECT_SUBDIR,
   TYPES_FILENAME,
   TYPES_OUTPUT_SUBDIR,
-} from "@/core/consts.js";
+} from "./consts.js";
 import {
   type TestOverrides,
   TestOverridesSchema,
-} from "@/core/project/schema.js";
+} from "./project/schema.js";
 
 // After bundling, import.meta.url points to dist/cli/index.js
 // Templates are copied to dist/templates/

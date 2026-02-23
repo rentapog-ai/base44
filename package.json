@@ -11,11 +11,11 @@
     "bin"
   ],
   "scripts": {
-    "build": "bun run clean && cp -r templates dist/ && bun run infra/build.ts",
-    "build:watch": "bun run clean && cp -r templates dist/ && bun run infra/build.ts --watch",
+    "build": "node build.js",
+    "build:watch": "node build.js",
     "typecheck": "tsc --noEmit",
-    "dev": "./bin/dev.ts",
-    "start": "./bin/run.js",
+    "dev": "bun ./src/cli/index.ts",
+    "start": "bun ./src/cli/index.ts",
     "clean": "rm -rf dist && mkdir -p dist",
     "lint": "biome check src tests",
     "lint:fix": "biome check --write src tests",
@@ -72,11 +72,15 @@
     "strip-ansi": "^7.1.2",
     "tar": "^7.5.4",
     "tmp-promise": "^3.0.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "vitest": "^4.0.16",
     "zod": "^4.3.5"
   },
   "engines": {
     "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "esbuild": "^0.27.3"
   }
 }

@@ -1,9 +1,9 @@
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand, runTask } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { readProjectConfig } from "@/core/index.js";
-import { generateTypesFile, updateProjectConfig } from "@/core/types/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand, runTask } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { readProjectConfig } from "../../../core/index.js";
+import { generateTypesFile, updateProjectConfig } from "../../../core/types/index.js";
 
 const TYPES_FILE_PATH = "base44/.types/types.d.ts";
 

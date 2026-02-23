@@ -1,15 +1,15 @@
 import { globby } from "globby";
-import { getAppConfigPath, getTestOverrides } from "@/core/config.js";
-import { APP_CONFIG_PATTERN } from "@/core/consts.js";
+import { getAppConfigPath, getTestOverrides } from "../config.js";
+import { APP_CONFIG_PATTERN } from "../consts.js";
 import {
   ConfigInvalidError,
   ConfigNotFoundError,
   SchemaValidationError,
-} from "@/core/errors.js";
-import { findProjectRoot } from "@/core/project/config.js";
-import type { AppConfig } from "@/core/project/schema.js";
-import { AppConfigSchema } from "@/core/project/schema.js";
-import { readJsonFile, writeFile } from "@/core/utils/fs.js";
+} from "../errors.js";
+import { findProjectRoot } from "./config.js";
+import type { AppConfig } from "./schema.js";
+import { AppConfigSchema } from "./schema.js";
+import { readJsonFile, writeFile } from "../utils/fs.js";
 
 interface CachedAppConfig {
   id: string;

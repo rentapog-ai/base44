@@ -1,4 +1,4 @@
-import { theme } from "@/cli/utils/theme";
+import { theme } from "../utils/theme.js";
 
 type LogType = "log" | "error" | "warn";
 

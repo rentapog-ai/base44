@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { getTestOverrides } from "@/core/config.js";
+import { getTestOverrides } from "../../core/config.js";
 import packageJson from "../../../package.json";
 
 export interface UpgradeInfo {

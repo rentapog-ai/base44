@@ -1,22 +1,22 @@
 import type { Option } from "@clack/prompts";
 import { cancel, group, isCancel, log, select, text } from "@clack/prompts";
 import { Command } from "commander";
-import { CLIExitError } from "@/cli/errors.js";
-import type { CLIContext } from "@/cli/types.js";
+import { CLIExitError } from "../../errors.js";
+import type { CLIContext } from "../../types.js";
 import {
   getDashboardUrl,
   onPromptCancel,
   runCommand,
   runTask,
   theme,
-} from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
+} from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
 import {
   ConfigExistsError,
   ConfigNotFoundError,
   InvalidInputError,
-} from "@/core/errors.js";
-import type { Project } from "@/core/project/index.js";
+} from "../../../core/errors.js";
+import type { Project } from "../../../core/project/index.js";
 import {
   appConfigExists,
   createProject,
@@ -24,7 +24,7 @@ import {
   listProjects,
   setAppConfig,
   writeAppConfig,
-} from "@/core/project/index.js";
+} from "../../../core/project/index.js";
 
 interface LinkOptions {
   create?: boolean;

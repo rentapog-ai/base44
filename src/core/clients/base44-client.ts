@@ -9,9 +9,9 @@ import {
   isTokenExpired,
   readAuth,
   refreshAndSaveTokens,
-} from "@/core/auth/config.js";
-import { getBase44ApiUrl } from "@/core/config.js";
-import { getAppConfig } from "@/core/project/index.js";
+} from "../auth/config.js";
+import { getBase44ApiUrl } from "../config.js";
+import { getAppConfig } from "../project/index.js";
 
 // Track requests that have already been retried to prevent infinite loops
 const retriedRequests = new WeakSet<KyRequest>();

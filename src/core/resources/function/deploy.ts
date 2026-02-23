@@ -1,12 +1,12 @@
 import { basename } from "node:path";
-import { deployFunctions } from "@/core/resources/function/api.js";
+import { deployFunctions } from "./api.js";
 import type {
   BackendFunction,
   DeployFunctionsResponse,
   FunctionFile,
   FunctionWithCode,
-} from "@/core/resources/function/schema.js";
-import { readTextFile } from "@/core/utils/fs.js";
+} from "./schema.js";
+import { readTextFile } from "../../utils/fs.js";
 
 async function loadFunctionCode(
   fn: BackendFunction,

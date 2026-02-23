@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
+import type { CLIContext } from "../../types.js";
 import { getTypesGenerateCommand } from "./generate.js";
 
 export function getTypesCommand(context: CLIContext): Command {

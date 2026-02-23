@@ -13,7 +13,7 @@ import {
   ConfigInvalidError,
   FileNotFoundError,
   FileReadError,
-} from "@/core/errors.js";
+} from "../errors.js";
 
 export async function pathExists(path: string): Promise<boolean> {
   try {

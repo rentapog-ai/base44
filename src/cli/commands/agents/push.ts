@@ -1,8 +1,8 @@
 import { log } from "@clack/prompts";
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { readProjectConfig } from "@/core/index.js";
-import { pushAgents } from "@/core/resources/agent/index.js";
+import type { CLIContext } from "../../types.js";
+import { readProjectConfig } from "../../../core/index.js";
+import { pushAgents } from "../../../core/resources/agent/index.js";
 import { runCommand, runTask } from "../../utils/index.js";
 import type { RunCommandResult } from "../../utils/runCommand.js";
 

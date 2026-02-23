@@ -1,5 +1,5 @@
-import { printAnimatedLines } from "@/cli/utils/animate.js";
-import { theme } from "@/cli/utils/theme.js";
+import { printAnimatedLines } from "./animate.js";
+import { theme } from "./theme.js";
 
 const BANNER_LINES = [
   "██████╗  █████╗ ███████╗███████╗ ██╗  ██╗██╗  ██╗",

@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import { PROJECT_SUBDIR, TYPES_OUTPUT_SUBDIR } from "@/core/consts.js";
-import { pathExists, readJsonFile, writeJsonFile } from "@/core/utils/fs.js";
+import { PROJECT_SUBDIR, TYPES_OUTPUT_SUBDIR } from "../consts.js";
+import { pathExists, readJsonFile, writeJsonFile } from "../utils/fs.js";
 
 const TYPES_INCLUDE_PATH = `${PROJECT_SUBDIR}/${TYPES_OUTPUT_SUBDIR}/*.d.ts`;
 

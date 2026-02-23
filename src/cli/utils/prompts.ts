@@ -1,5 +1,5 @@
 import { cancel } from "@clack/prompts";
-import { CLIExitError } from "@/cli/errors.js";
+import { CLIExitError } from "../errors.js";
 
 /**
  * Standard onCancel handler for prompt groups.

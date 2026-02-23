@@ -1,9 +1,9 @@
-import { renewAccessToken } from "@/core/auth/api.js";
-import type { AuthData } from "@/core/auth/schema.js";
-import { AuthDataSchema } from "@/core/auth/schema.js";
-import { getAuthFilePath } from "@/core/config.js";
-import { FileReadError, SchemaValidationError } from "@/core/errors.js";
-import { deleteFile, readJsonFile, writeJsonFile } from "@/core/utils/fs.js";
+import { renewAccessToken } from "./api.js";
+import type { AuthData } from "./schema.js";
+import { AuthDataSchema } from "./schema.js";
+import { getAuthFilePath } from "../config.js";
+import { FileReadError, SchemaValidationError } from "../errors.js";
+import { deleteFile, readJsonFile, writeJsonFile } from "../utils/fs.js";
 
 // Buffer time before expiration to trigger proactive refresh (60 seconds)
 const TOKEN_REFRESH_BUFFER_MS = 60 * 1000;

@@ -1,8 +1,8 @@
-import type { ProjectConfig } from "@/core/project/schema.js";
-import type { AgentConfig } from "@/core/resources/agent/index.js";
-import type { ConnectorResource } from "@/core/resources/connector/index.js";
-import type { Entity } from "@/core/resources/entity/index.js";
-import type { BackendFunction } from "@/core/resources/function/index.js";
+import type { ProjectConfig } from "./schema.js";
+import type { AgentConfig } from "../resources/agent/index.js";
+import type { ConnectorResource } from "../resources/connector/index.js";
+import type { Entity } from "../resources/entity/index.js";
+import type { BackendFunction } from "../resources/function/index.js";
 
 interface ProjectWithPaths extends ProjectConfig {
   root: string;

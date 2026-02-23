@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { globby } from "globby";
-import { SchemaValidationError } from "@/core/errors.js";
+import { SchemaValidationError } from "../../errors.js";
 import {
   CONFIG_FILE_EXTENSION,
   CONFIG_FILE_EXTENSION_GLOB,

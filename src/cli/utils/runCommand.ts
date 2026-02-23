@@ -1,12 +1,12 @@
 import { intro, log, outro } from "@clack/prompts";
-import { login } from "@/cli/commands/auth/login-flow.js";
-import type { CLIContext } from "@/cli/types.js";
-import { printBanner } from "@/cli/utils/banner.js";
-import { theme } from "@/cli/utils/theme.js";
-import { printUpgradeNotificationIfAvailable } from "@/cli/utils/upgradeNotification.js";
-import { isLoggedIn, readAuth } from "@/core/auth/index.js";
-import { isCLIError } from "@/core/errors.js";
-import { initAppConfig } from "@/core/project/index.js";
+import { login } from "../commands/auth/login-flow.js";
+import type { CLIContext } from "../types.js";
+import { printBanner } from "./banner.js";
+import { theme } from "./theme.js";
+import { printUpgradeNotificationIfAvailable } from "./upgradeNotification.js";
+import { isLoggedIn, readAuth } from "../../core/auth/index.js";
+import { isCLIError } from "../../core/errors.js";
+import { initAppConfig } from "../../core/project/index.js";
 
 interface RunCommandOptions {
   /**

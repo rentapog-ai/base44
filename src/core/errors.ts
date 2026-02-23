@@ -14,7 +14,7 @@ import { z } from "zod";
 import {
   type ApiErrorResponse,
   ApiErrorResponseSchema,
-} from "@/core/clients/schemas.js";
+} from "./clients/schemas.js";
 
 // ============================================================================
 // API Error Response Parsing

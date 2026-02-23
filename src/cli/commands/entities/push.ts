@@ -1,10 +1,10 @@
 import { log } from "@clack/prompts";
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand, runTask } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { readProjectConfig } from "@/core/index.js";
-import { pushEntities } from "@/core/resources/entity/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand, runTask } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { readProjectConfig } from "../../../core/index.js";
+import { pushEntities } from "../../../core/resources/entity/index.js";
 
 async function pushEntitiesAction(): Promise<RunCommandResult> {
   const { entities } = await readProjectConfig();

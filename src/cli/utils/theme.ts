@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import type { ErrorContext } from "@/cli/telemetry/error-reporter.js";
-import type { ErrorHint } from "@/core/errors.js";
+import type { ErrorContext } from "../telemetry/error-reporter.js";
+import type { ErrorHint } from "../../core/errors.js";
 
 /**
  * Base44 CLI theme configuration

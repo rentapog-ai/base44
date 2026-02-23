@@ -1,13 +1,13 @@
 import { confirm, isCancel, log, spinner } from "@clack/prompts";
 import open from "open";
 import pWaitFor, { TimeoutError } from "p-wait-for";
-import { theme } from "@/cli/utils/index.js";
+import { theme } from "../../utils/index.js";
 import type {
   ConnectorOAuthStatus,
   ConnectorSyncResult,
   IntegrationType,
-} from "@/core/resources/connector/index.js";
-import { getOAuthStatus } from "@/core/resources/connector/index.js";
+} from "../../../core/resources/connector/index.js";
+import { getOAuthStatus } from "../../../core/resources/connector/index.js";
 
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes

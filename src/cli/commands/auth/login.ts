@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand } from "@/cli/utils/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand } from "../../utils/index.js";
 import { login } from "./login-flow.js";
 
 export function getLoginCommand(context: CLIContext): Command {

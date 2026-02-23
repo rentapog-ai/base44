@@ -2,14 +2,14 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { KyResponse } from "ky";
 import { extract } from "tar";
-import { base44Client } from "@/core/clients/index.js";
-import { ApiError, SchemaValidationError } from "@/core/errors.js";
-import type { ProjectsResponse } from "@/core/project/schema.js";
+import { base44Client } from "../clients/index.js";
+import { ApiError, SchemaValidationError } from "../errors.js";
+import type { ProjectsResponse } from "./schema.js";
 import {
   CreateProjectResponseSchema,
   ProjectsResponseSchema,
-} from "@/core/project/schema.js";
-import { makeDirectory } from "@/core/utils/fs.js";
+} from "./schema.js";
+import { makeDirectory } from "../utils/fs.js";
 
 export async function createProject(projectName: string, description?: string) {
   let response: KyResponse;

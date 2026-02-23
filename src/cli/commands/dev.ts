@@ -1,11 +1,11 @@
 import { dirname, join } from "node:path";
 import { Command } from "commander";
-import { createDevServer } from "@/cli/dev/dev-server/main";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand, theme } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { readProjectConfig } from "@/core/project/config.js";
-import { functionResource } from "@/core/resources/function/resource.js";
+import { createDevServer } from "../dev/dev-server/main.js";
+import type { CLIContext } from "../types.js";
+import { runCommand, theme } from "../utils/index.js";
+import type { RunCommandResult } from "../utils/runCommand.js";
+import { readProjectConfig } from "../../core/project/config.js";
+import { functionResource } from "../../core/resources/function/resource.js";
 
 interface DevOptions {
   port?: string;

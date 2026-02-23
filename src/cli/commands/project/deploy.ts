@@ -3,20 +3,20 @@ import { Command } from "commander";
 import {
   filterPendingOAuth,
   promptOAuthFlows,
-} from "@/cli/commands/connectors/oauth-prompt.js";
-import type { CLIContext } from "@/cli/types.js";
+} from "../connectors/oauth-prompt.js";
+import type { CLIContext } from "../../types.js";
 import {
   getDashboardUrl,
   runCommand,
   runTask,
   theme,
-} from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
+} from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
 import {
   deployAll,
   hasResourcesToDeploy,
   readProjectConfig,
-} from "@/core/project/index.js";
+} from "../../../core/project/index.js";
 
 interface DeployOptions {
   yes?: boolean;

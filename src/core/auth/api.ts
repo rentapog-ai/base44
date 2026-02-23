@@ -2,16 +2,16 @@ import type {
   DeviceCodeResponse,
   TokenResponse,
   UserInfoResponse,
-} from "@/core/auth/schema.js";
+} from "./schema.js";
 import {
   DeviceCodeResponseSchema,
   OAuthErrorSchema,
   TokenResponseSchema,
   UserInfoSchema,
-} from "@/core/auth/schema.js";
-import { oauthClient } from "@/core/clients/index.js";
-import { AUTH_CLIENT_ID } from "@/core/consts.js";
-import { ApiError, SchemaValidationError } from "@/core/errors.js";
+} from "./schema.js";
+import { oauthClient } from "../clients/index.js";
+import { AUTH_CLIENT_ID } from "../consts.js";
+import { ApiError, SchemaValidationError } from "../errors.js";
 
 export async function generateDeviceCode(): Promise<DeviceCodeResponse> {
   const response = await oauthClient.post("oauth/device/code", {

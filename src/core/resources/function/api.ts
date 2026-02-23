@@ -1,16 +1,16 @@
 import type { KyResponse } from "ky";
-import { getAppClient } from "@/core/clients/index.js";
-import { ApiError, SchemaValidationError } from "@/core/errors.js";
+import { getAppClient } from "../../clients/index.js";
+import { ApiError, SchemaValidationError } from "../../errors.js";
 import type {
   DeployFunctionsResponse,
   FunctionLogFilters,
   FunctionLogsResponse,
   FunctionWithCode,
-} from "@/core/resources/function/schema.js";
+} from "./schema.js";
 import {
   DeployFunctionsResponseSchema,
   FunctionLogsResponseSchema,
-} from "@/core/resources/function/schema.js";
+} from "./schema.js";
 
 function toDeployPayloadItem(fn: FunctionWithCode) {
   return {

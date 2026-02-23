@@ -1,13 +1,13 @@
 import type { KyResponse } from "ky";
-import { base44Client, getAppClient } from "@/core/clients/index.js";
-import { ApiError, SchemaValidationError } from "@/core/errors.js";
-import { getAppConfig } from "@/core/project/index.js";
-import type { DeployResponse } from "@/core/site/schema.js";
+import { base44Client, getAppClient } from "../clients/index.js";
+import { ApiError, SchemaValidationError } from "../errors.js";
+import { getAppConfig } from "../project/index.js";
+import type { DeployResponse } from "./schema.js";
 import {
   DeployResponseSchema,
   PublishedUrlResponseSchema,
-} from "@/core/site/schema.js";
-import { readFile } from "@/core/utils/fs.js";
+} from "./schema.js";
+import { readFile } from "../utils/fs.js";
 
 /**
  * Uploads a tar.gz archive file to the Base44 hosting API.

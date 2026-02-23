@@ -1,14 +1,14 @@
 import { log } from "@clack/prompts";
 import { Command } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand, runTask, theme } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { readProjectConfig } from "@/core/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand, runTask, theme } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { readProjectConfig } from "../../../core/index.js";
 import {
   type ConnectorSyncResult,
   type IntegrationType,
   pushConnectors,
-} from "@/core/resources/connector/index.js";
+} from "../../../core/resources/connector/index.js";
 import {
   filterPendingOAuth,
   type OAuthFlowStatus,

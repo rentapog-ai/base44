@@ -1,14 +1,14 @@
 import { Command, Option } from "commander";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { ApiError, InvalidInputError } from "@/core/errors.js";
-import { readProjectConfig } from "@/core/index.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { ApiError, InvalidInputError } from "../../../core/errors.js";
+import { readProjectConfig } from "../../../core/index.js";
 import type {
   FunctionLogFilters,
   FunctionLogsResponse,
-} from "@/core/resources/function/index.js";
-import { fetchFunctionLogs } from "@/core/resources/function/index.js";
+} from "../../../core/resources/function/index.js";
+import { fetchFunctionLogs } from "../../../core/resources/function/index.js";
 
 interface LogsOptions {
   function?: string;

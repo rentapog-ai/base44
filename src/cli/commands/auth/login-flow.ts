@@ -1,19 +1,19 @@
 import { log } from "@clack/prompts";
 import pWaitFor from "p-wait-for";
-import { runTask } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import { theme } from "@/cli/utils/theme.js";
+import { runTask } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import { theme } from "../../utils/theme.js";
 import type {
   DeviceCodeResponse,
   TokenResponse,
   UserInfoResponse,
-} from "@/core/auth/index.js";
+} from "../../../core/auth/index.js";
 import {
   generateDeviceCode,
   getTokenFromDeviceCode,
   getUserInfo,
   writeAuth,
-} from "@/core/auth/index.js";
+} from "../../../core/auth/index.js";
 
 async function generateAndDisplayDeviceCode(): Promise<DeviceCodeResponse> {
   const deviceCodeResponse = await runTask(

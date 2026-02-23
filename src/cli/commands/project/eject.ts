@@ -4,12 +4,12 @@ import { cancel, confirm, isCancel, log, select, text } from "@clack/prompts";
 import { Command } from "commander";
 import { execa } from "execa";
 import kebabCase from "lodash.kebabcase";
-import { deployAction } from "@/cli/commands/project/deploy.js";
-import { CLIExitError } from "@/cli/errors.js";
-import type { CLIContext } from "@/cli/types.js";
-import { runCommand, runTask, theme } from "@/cli/utils/index.js";
-import type { RunCommandResult } from "@/cli/utils/runCommand.js";
-import type { Project } from "@/core/index.js";
+import { deployAction } from "./deploy.js";
+import { CLIExitError } from "../../errors.js";
+import type { CLIContext } from "../../types.js";
+import { runCommand, runTask, theme } from "../../utils/index.js";
+import type { RunCommandResult } from "../../utils/runCommand.js";
+import type { Project } from "../../../core/index.js";
 import {
   createProject,
   createProjectFilesForExistingProject,
@@ -20,7 +20,7 @@ import {
   setAppConfig,
   writeAppConfig,
   writeFile,
-} from "@/core/index.js";
+} from "../../../core/index.js";
 
 interface EjectOptions {
   path?: string;
