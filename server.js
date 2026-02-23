@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { generateAppCode } from './server-utils/groqService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -41,41 +42,41 @@ app.get('/api/help', (req, res) => {
   }
 });
 
-// Generic CLI command executor
-app.post('/api/execute', express.json(), (req, res) => {
+// App generation endpoint powered by Groq AI
+app.post('/api/execute', express.json(), async (req, res) => {
   try {
     const { command } = req.body;
     
-    // Security: validate command
+    // Validate input - now treating 'command' as a description
     if (!command || typeof command !== 'string') {
       return res.status(400).json({ 
-        error: 'Command must be a non-empty string' 
-      });
-    }
-    
-    // Prevent dangerous commands
-    if (command.includes(';') || command.includes('&&') || command.includes('|')) {
-      return res.status(400).json({ 
-        error: 'Command chaining not allowed' 
+        error: 'Description must be a non-empty string',
+        success: false
       });
     }
 
-    const result = execSync(`node ./bin/run.js ${command}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
-      cwd: __dirname
-    });
+    // Check Groq API key
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'Server is not configured with Groq API key. Please contact administrator.'
+      });
+    }
+
+    // Generate app code using Groq
+    const generatedCode = await generateAppCode(command);
 
     res.json({ 
       success: true,
       command,
-      output: result 
+      output: generatedCode,
+      generatedWith: 'Groq AI (mixtral-8x7b-32768)'
     });
   } catch (error) {
+    console.error('Error in /api/execute:', error);
     res.status(500).json({ 
       success: false,
-      error: error.message,
-      stderr: error.stderr?.toString()
+      error: error.message || 'Failed to generate application code'
     });
   }
 });
@@ -86,52 +87,84 @@ app.get('/', (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Base44 CLI Service</title>
+      <title>Base44 App Generator</title>
       <style>
-        body { font-family: Arial; margin: 40px; }
-        h1 { color: #333; }
-        .endpoint { background: #f0f0f0; padding: 10px; margin: 10px 0; border-left: 4px solid #007bff; }
-        code { background: #fff; padding: 2px 5px; border-radius: 3px; }
+        body { font-family: Arial; margin: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        h1 { color: #667eea; margin-top: 0; }
+        .status { background: #e8f5e9; padding: 15px; border-left: 4px solid #4caf50; border-radius: 4px; margin-bottom: 20px; }
+        .status.running { color: #2e7d32; font-weight: bold; }
+        .endpoint { background: #f5f5f5; padding: 15px; margin: 15px 0; border-left: 4px solid #667eea; border-radius: 4px; }
+        .endpoint strong { color: #667eea; }
+        code { background: #fff; padding: 3px 6px; border-radius: 3px; font-family: 'Courier New'; }
+        .example { background: #f9f9f9; padding: 12px; margin-top: 10px; border-radius: 4px; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { padding: 8px 0; padding-left: 20px; position: relative; }
+        .feature-list li:before { content: "✓"; position: absolute; left: 0; color: #4caf50; font-weight: bold; }
       </style>
     </head>
     <body>
-      <h1>🚀 Base44 CLI Service</h1>
-      <p>Service is running and ready to handle CLI commands.</p>
-      
-      <h2>Available Endpoints</h2>
-      
-      <div class="endpoint">
-        <strong>GET /health</strong><br>
-        Health check endpoint. Returns service status and uptime.
+      <div class="container">
+        <h1>🚀 Base44 App Generator (Powered by Groq AI)</h1>
+        
+        <div class="status running">
+          ✓ Service is running and ready to generate applications with AI
+        </div>
+        
+        <p>This service uses <strong>Groq's mixtral-8x7b-32768</strong> model to generate complete Base44 applications from natural language descriptions.</p>
+        
+        <h2>Features</h2>
+        <ul class="feature-list">
+          <li>AI-powered app generation from descriptions</li>
+          <li>Fast response times (Groq - sub-500ms)</li>
+          <li>Health monitoring and status checks</li>
+          <li>RESTful API endpoints</li>
+        </ul>
+        
+        <h2>Available Endpoints</h2>
+        
+        <div class="endpoint">
+          <strong>GET /health</strong><br>
+          Health check endpoint. Returns service status and uptime.
+          <div class="example">
+            <code>curl https://base44-1.onrender.com/health</code>
+          </div>
+        </div>
+        
+        <div class="endpoint">
+          <strong>GET /api/help</strong><br>
+          Returns CLI help menu
+          <div class="example">
+            <code>curl https://base44-1.onrender.com/api/help</code>
+          </div>
+        </div>
+        
+        <div class="endpoint">
+          <strong>POST /api/execute</strong><br>
+          Generate a Base44 application from a natural language description.<br>
+          Request body: <code>{ "command": "todo app with user authentication" }</code><br>
+          Response: <code>{ "success": true, "output": "... generated app config ..." }</code>
+          <div class="example">
+            <strong>Try it:</strong><br>
+            <code>curl -X POST https://base44-1.onrender.com/api/execute \\<br>
+            &nbsp;&nbsp;-H "Content-Type: application/json" \\<br>
+            &nbsp;&nbsp;-d '{"command": "todo app with user authentication"}'</code>
+          </div>
+        </div>
+        
+        <h2>How It Works</h2>
+        <ol>
+          <li>Send a natural language description to <code>/api/execute</code></li>
+          <li>Groq AI generates a complete Base44 app specification</li>
+          <li>Receive structured app configuration ready for deployment</li>
+        </ol>
+        
+        <h2>Documentation</h2>
+        <p>See <a href="https://github.com/rentapog-ai/base44" target="_blank">GitHub repository</a> for full documentation.</p>
+        
+        <hr style="margin-top: 40px; border: none; border-top: 1px solid #ddd;">
+        <p style="color: #666; font-size: 12px;">AI Model: Groq mixtral-8x7b-32768 | Status: ✓ Active | Last Updated: 2025</p>
       </div>
-      
-      <div class="endpoint">
-        <strong>GET /api/help</strong><br>
-        Returns CLI help menu (equivalent to <code>base44 --help</code>)
-      </div>
-      
-      <div class="endpoint">
-        <strong>POST /api/execute</strong><br>
-        Execute a CLI command<br>
-        Request body: <code>{ "command": "create --help" }</code><br>
-        Response: <code>{ "success": true, "output": "..." }</code>
-      </div>
-      
-      <h2>Examples</h2>
-      
-      <p><strong>Check health:</strong></p>
-      <code>curl https://base44-cli-xxxx.onrender.com/health</code>
-      
-      <p><strong>Get help:</strong></p>
-      <code>curl https://base44-cli-xxxx.onrender.com/api/help</code>
-      
-      <p><strong>Run a command:</strong></p>
-      <code>curl -X POST https://base44-cli-xxxx.onrender.com/api/execute \\<br>
-      &nbsp;&nbsp;-H "Content-Type: application/json" \\<br>
-      &nbsp;&nbsp;-d '{"command": "create --help"}'</code>
-      
-      <h2>Documentation</h2>
-      <p>See <a href="https://github.com/rentapog-ai/base44">GitHub repository</a> for full documentation.</p>
     </body>
     </html>
   `);

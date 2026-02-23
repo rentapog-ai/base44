@@ -1,0 +1,57 @@
+import Groq from 'groq-sdk';
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+/**
+ * Generate an application specification using Groq AI
+ * @param {string} description - User description of the app they want to build
+ * @returns {Promise<string>} - Generated application code/specification
+ */
+export async function generateAppCode(description) {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY environment variable is not set');
+  }
+
+  const systemPrompt = `You are an expert Base44 application architect. Generate complete, production-ready Base44 application configurations based on user descriptions.
+
+Your output should be valid JavaScript/TypeScript configuration that defines:
+1. Application metadata (name, description, version)
+2. API entities (data models with fields, validations)
+3. Functions (endpoints or business logic)
+4. Agents (AI assistants if applicable)
+5. Frontend structure (pages, components)
+
+Output format should be valid JSON with proper structure that can be used to scaffold a complete application.
+Be specific about field types, validations, and relationships.
+Include helpful comments in the generated code.`;
+
+  try {
+    const message = await groq.messages.create({
+      model: 'mixtral-8x7b-32768',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: `Generate a complete Base44 application for: ${description}\n\nProvide the configuration as JSON that can be used to create the application.`,
+        },
+      ],
+    });
+
+    if (message.content[0].type === 'text') {
+      return message.content[0].text;
+    }
+
+    throw new Error('Unexpected response format from Groq API');
+  } catch (error) {
+    if (error.status === 401) {
+      throw new Error('Groq API authentication failed. Check your GROQ_API_KEY.');
+    }
+    if (error.status === 429) {
+      throw new Error('Groq API rate limit exceeded. Please try again later.');
+    }
+    throw error;
+  }
+}

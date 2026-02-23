@@ -66,6 +66,7 @@
     "front-matter": "^4.0.2",
     "get-port": "^7.1.0",
     "globby": "^16.1.0",
+    "groq-sdk": "^0.37.0",
     "http-proxy-middleware": "^3.0.5",
     "json5": "^2.2.3",
     "ky": "^1.14.2",
