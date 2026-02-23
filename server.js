@@ -4,13 +4,27 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { generateAppCode } from './server-utils/groqService.js';
+import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load environment variables from .env file
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -73,10 +87,12 @@ app.post('/api/execute', express.json(), async (req, res) => {
       generatedWith: 'Groq AI (mixtral-8x7b-32768)'
     });
   } catch (error) {
-    console.error('Error in /api/execute:', error);
+    console.error('Error in /api/execute:', error.message);
+    console.error('Full error:', error);
     res.status(500).json({ 
       success: false,
-      error: error.message || 'Failed to generate application code'
+      error: error.message || 'Failed to generate application code',
+      details: error.toString()
     });
   }
 });
