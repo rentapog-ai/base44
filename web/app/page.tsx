@@ -31,6 +31,16 @@ export default function Home() {
         body: JSON.stringify({ command: description }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setResult({
+          success: false,
+          error: `Server error (${response.status}): ${errorData.error || "Unknown error"}`,
+        });
+        setShowResult(true);
+        return;
+      }
+
       const data: BuildResult = await response.json();
       setResult(data);
       setShowResult(true);
