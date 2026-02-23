@@ -36,7 +36,7 @@ Be specific about field types, validations, and relationships.
 Include helpful comments in the generated code.`;
 
   try {
-    const message = await groqClient.messages.create({
+    const response = await groqClient.chat.completions.create({
       model: 'mixtral-8x7b-32768',
       max_tokens: 2048,
       system: systemPrompt,
@@ -48,8 +48,8 @@ Include helpful comments in the generated code.`;
       ],
     });
 
-    if (message.content[0].type === 'text') {
-      return message.content[0].text;
+    if (response.choices && response.choices[0] && response.choices[0].message) {
+      return response.choices[0].message.content;
     }
 
     throw new Error('Unexpected response format from Groq API');
