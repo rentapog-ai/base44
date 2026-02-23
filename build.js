@@ -43,7 +43,7 @@ async function build() {
     
     // List of pure ESM packages that must be external
     const externalPackages = new Set([
-      "@clack/prompts", "chalk", "commander", "cors", "ejs", "execa", "express",
+      "@clack/prompts", "chalk", "commander", "common-tags", "cors", "ejs", "execa", "express",
       "front-matter", "get-port", "globby", "http-proxy-middleware",
       "json-schema-to-typescript", "json5", "ky", "lodash.kebabcase", "msw",
       "nanoid", "open", "p-wait-for", "posthog-node", "strip-ansi", "tar",
