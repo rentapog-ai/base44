@@ -37,7 +37,7 @@ Include helpful comments in the generated code.`;
 
   try {
     const response = await groqClient.chat.completions.create({
-      model: 'llama-3.1-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       max_tokens: 2048,
       messages: [
         {

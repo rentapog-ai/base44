@@ -89,7 +89,7 @@ app.post('/api/execute', express.json(), async (req, res) => {
       success: true,
       command,
       output: generatedCode,
-      generatedWith: 'Groq AI (llama-3.1-70b-versatile)'
+      generatedWith: 'Groq AI (llama-3.1-8b-instant)'
     });
   } catch (error) {
     console.error('Error in /api/execute:', error.message);
