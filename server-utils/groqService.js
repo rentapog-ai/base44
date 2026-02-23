@@ -39,8 +39,11 @@ Include helpful comments in the generated code.`;
     const response = await groqClient.chat.completions.create({
       model: 'mixtral-8x7b-32768',
       max_tokens: 2048,
-      system: systemPrompt,
       messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
         {
           role: 'user',
           content: `Generate a complete Base44 application for: ${description}\n\nProvide the configuration as JSON that can be used to create the application.`,
