@@ -18,6 +18,21 @@ export default function Home() {
   const [result, setResult] = useState<BuildResult | null>(null);
   const [showResult, setShowResult] = useState(false);
 
+  const handleViewProject = () => {
+    if (!result?.output) return;
+    
+    // Create a blob with the JSON content
+    const blob = new Blob([result.output], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${result.command || 'app'}-config.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleBuildApp = async (description: string) => {
     setLoading(true);
     setShowResult(false);
@@ -127,7 +142,12 @@ export default function Home() {
                 >
                   Build Another
                 </button>
-                <button className="btn-secondary text-sm">
+                <button
+                  onClick={handleViewProject}
+                  className="btn-secondary text-sm"
+                  disabled={!result?.success}
+                  title={!result?.success ? "Only available for successful builds" : "Download project configuration"}
+                >
                   View Project
                 </button>
               </div>
