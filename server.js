@@ -9,7 +9,12 @@ import dotenv from 'dotenv';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load environment variables from .env file
-dotenv.config({ path: path.join(__dirname, '.env') });
+const dotenvResult = dotenv.config({ path: path.join(__dirname, '.env') });
+console.log('📋 dotenv config result:', {
+  parsed: dotenvResult.parsed ? Object.keys(dotenvResult.parsed) : 'none',
+  error: dotenvResult.error ? dotenvResult.error.message : 'none'
+});
+console.log('🔑 GROQ_API_KEY after dotenv:', process.env.GROQ_API_KEY ? '✅ Loaded' : '❌ Not found');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -84,7 +89,7 @@ app.post('/api/execute', express.json(), async (req, res) => {
       success: true,
       command,
       output: generatedCode,
-      generatedWith: 'Groq AI (mixtral-8x7b-32768)'
+      generatedWith: 'Groq AI (llama-3.1-70b-versatile)'
     });
   } catch (error) {
     console.error('Error in /api/execute:', error.message);
